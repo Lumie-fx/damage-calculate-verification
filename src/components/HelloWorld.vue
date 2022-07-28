@@ -16,11 +16,11 @@
 <script>
 import * as rxjs from 'rxjs'
 import { interval, fromEvent, combineLatest } from 'rxjs';
-import { take, mapTo, startWith, scan, tap, map } from 'rxjs/operators';  //! rxjs 和 rxjs/operators 都有take
+import { take, mapTo, startWith, scan, tap, map } from 'rxjs/operators'; //! rxjs 和 rxjs/operators 都有take
 import {Observable} from 'rxjs'
 import _ from 'lodash'
 
-window._ = _;
+window._ = _
 
 export default {
   name: 'HelloWorld',

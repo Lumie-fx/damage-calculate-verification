@@ -22,6 +22,7 @@ import relics from '../config/relics' //模拟当前圣遗物属性
 
 
 
+//数据 todo 接入miao-plugin查询插件数据
 
 const insert = [{
   name: 'huTao',
@@ -294,7 +295,7 @@ export default {
 
       //出伤对象基础配置, 最后计算伤害时使用 -可提出去
       this.monsterLevel = 90; //等级
-      this.defendMitigationBase = 500; //防御
+      this.defendMitigationBase = 500; //防御 -暂时都是百分比减防, 防御公示待定
       this.resistanceMitigationBase = new Array(8).fill(.1);//抗性
 
       //怪物防御乘区 -- team处绑定
@@ -386,7 +387,7 @@ export default {
     let _actions = [];
 
     //todo 可选
-    const chain = 'huTao:e-az10-q|yeLan:q-a-e2';
+    const chain = 'yeLan:q-a-e2|huTao:e-az10-q';
 
     const rollChainArr = chain.split('|');
 
@@ -419,7 +420,7 @@ export default {
     });
 
 
-    //todo
+    //todo while
     // const wholeTime = _actions.reduce((allValue, nowValue)=>{
     //   return person[nowValue]().filter(res=>res.main)[0].last + allValue
     // },0);
@@ -536,7 +537,9 @@ export default {
 
 
 
-    damageCount(teamPack.note);
+    const notes = damageCount(teamPack.note);
+
+    log(notes)
   }
 }
 

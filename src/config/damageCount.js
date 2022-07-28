@@ -1,4 +1,7 @@
+import roll2Zh from './roll2Zh'
+
 const log = console.log;
+
 
 export const damageCount = function(note){
 
@@ -9,7 +12,7 @@ export const damageCount = function(note){
       actionName: "q",
       from: "yeLan",
       lockedAttr: undefined,   //=>refineAttr
-      multiplicationArea: {
+      multiplicationArea: {  //attr
         attack: 1115,
         critical: 0.877,
         criticalDamage: 3.276,
@@ -33,14 +36,68 @@ export const damageCount = function(note){
         monsterMinusResistance: (8) [0, 0, 0, 0, 0, 0, 0, 0],
       },
       timing: 16,
+      message: "第/time/秒，胡桃使用安神秘法(面板锁定)，造成/damage/点伤害。", --感觉不需要
       type: "attach/damage",
     }
   */
 
+  const noteList = [];
+  const attrLockList = ['life','attack','defend','critical','criticalDamage','energyCharge','elementMaster','elementReactionTimes','elementCharge','defendMitigation']
+
   note.forEach(sequence => {
-    //lockedAttr + multiplicationArea => attr
+    //技能消息/消息
+    if(sequence.type === 'message'){
+      noteList.push(sequence);
+    }
+    //伤害结算
+    if(sequence.type === 'attach/damage' || sequence.type === 'reaction'){
+      //lockedAttr + multiplicationArea => attr
+      let attr = sequence.multiplicationArea;
+      //载入锁面板属性
+      if(sequence.lockedAttr){
+        attrLockList.forEach(attribute => {
+          attr[attribute] = sequence.lockedAttr[attribute];
+        });
+      }
+
+      // log(JSON.parse(JSON.stringify(attr)))
+
+      const damageBase = attackArea(attr);
+      const muti = mutiArea(attr);
+      const {critical,criticalRate} = criticalArea(attr);
+      const damageIncrease = increaseArea(attr);
+      const defendMinus = defendArea(attr);
+      const resistanceMinus = resistanceArea(attr);
+      const {zengFuMuti, juBianDamage, type} = chargeArea(attr);
+
+      // log(defendMinus,resistanceMinus, zengFuMuti)
+
+      if(['燃烧','超导','扩散','感电','超载'].includes(type)){
+        noteList.push({
+          type: 'message',
+          message: `第${sequence.timing/10}秒，${roll2Zh[sequence.from].name}触发${type}，造成${juBianDamage}点伤害。`,
+          reactionType: type,
+          damage: juBianDamage,
+        });
+      }else{
+        let reactionName = '',
+            isCritical = critical ? '(暴击)' : '';
+        if(['蒸发','融化'].includes(type)){
+          reactionName = `(${type})`;
+        }
+        const damage = Math.round(damageBase * muti * criticalRate * damageIncrease * defendMinus * resistanceMinus * zengFuMuti);
+        noteList.push({
+          type: 'message',
+          message: `第${sequence.timing/10}秒，${roll2Zh[sequence.from].name}使用${sequence.actionName}，造成${damage}${reactionName}${isCritical}点伤害。`,
+          reactionType: type,
+          damage,
+        });
+      }
+    }
+
   });
 
+  return noteList;
 };
 
 //攻击乘区
@@ -54,13 +111,18 @@ const attackArea = (attr) => {
   return damageBase;
 };
 
+//倍率乘区
+const mutiArea = (attr) => {
+  return attr.damageMultiple;
+};
+
 //双暴乘区
 //todo 特殊暴击计算 (如鱼叉对大招暴击, 小鹿6命e暴击)
 const criticalArea = (attr) => {
-  const criticalFlag = Math.random() > attr.critical;
+  const criticalFlag = Math.random() <= attr.critical;
   return {
     critical: criticalFlag,   //true 暴击
-    criticalRate: criticalFlag ? 1 : attr.criticalDamage,//伤害比
+    criticalRate: criticalFlag ? attr.criticalDamage : 1,//伤害比
   };
 };
 
@@ -141,9 +203,9 @@ const chargeArea = (attr) => {
   const juBianDamage = juBianBaseDamage * chargeRate * juBianIncrease * (1-juBianResistance);
     
   if(type === '蒸发' || type === '融化'){//出系数
-    zengFuMuti = rate * ( 2.78/(1+1400/elementMaster) + elementReactionTimes );
+    zengFuMuti = rate * ( 2.78/(1+1400/elementMaster) + elementReactionTimes + 1);
   }
-  return {zengFuMuti, juBianDamage};
+  return {zengFuMuti, juBianDamage, type};
 };
 
 
