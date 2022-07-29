@@ -68,7 +68,7 @@ export const chargeElementSequence = function(idx, sequenceArr){
           if(sequenceObj.bind === 'A'){
             const bindAttackKey = sequenceObj.from+'_'+sequenceObj.name;
 
-            log(idx, bindAttackKey)
+            // log(idx, bindAttackKey)
 
             if(!_.find(bindAttackTimeArr, {name: bindAttackKey})){
               bindAttackTimeArr.push({
@@ -93,6 +93,11 @@ export const chargeElementSequence = function(idx, sequenceArr){
             }
           }
         });
+      }
+
+
+      if(sequence.damageType === 'E'){
+        log(sequence)
       }
 
       if(sequence.damageType === 'Q'){
@@ -369,7 +374,7 @@ function packDamageItem(item, reaction){
     elementMaster: this[name].refineAttr.elementMaster,        //元素精通
     elementReactionType: type,                                 //反应类型
     elementReactionRate: rate,                                 //反应倍率
-    elementReactionTimes: this[name].refineAttr.elementReactionTimes,//反应倍率2
+    elementReactionAloneArr: this[name].refineAttr.elementReactionAloneArr,//反应倍率2
     monsterLevel: this.monsterLevel,                           //伤害对象等级
     monsterBaseDefend: this.defendMitigationBase,              //伤害对象基础防御
     monsterMinusDefend: this.defendMitigation,                 //伤害对象防御减免

@@ -1,4 +1,5 @@
 import roll2Zh from './roll2Zh'
+import _ from 'lodash'
 
 const log = console.log;
 
@@ -22,7 +23,7 @@ export const damageCount = function(note){
         elementCharge: (8) [1.676, 1.21, 1.21, 1.21, 1.21, 1.21, 1.21, 1.21],
         elementMaster: 42,
         elementReactionRate: undefined,
-        elementReactionTimes: 0,
+        elementReactionAloneArr: 0,
         elementReactionType: undefined,
         elementType: (8) [1, 0, 0, 0, 0, 0, 0, 0],
         level: 90,
@@ -42,7 +43,7 @@ export const damageCount = function(note){
   */
 
   const noteList = [];
-  const attrLockList = ['life','attack','defend','critical','criticalDamage','energyCharge','elementMaster','elementReactionTimes','elementCharge','defendMitigation']
+  const attrLockList = ['life','attack','defend','critical','criticalDamage','energyCharge','elementMaster','elementReactionAloneArr','elementCharge','defendMitigation']
 
   note.forEach(sequence => {
     //技能消息/消息
@@ -163,7 +164,7 @@ const resistanceArea = (attr) => {
 const chargeArea = (attr) => {
   const roleLevel = attr.level;
   const elementMaster = attr.elementMaster;
-  const elementReactionTimes = attr.elementReactionTimes; //魔女/莫娜命座的反应乘区, 与精通计算的数字相加
+  const elementReactionAloneArr = attr.elementReactionAloneArr; //魔女/莫娜命座的反应乘区, 与精通计算的数字相加
   const rate = attr.elementReactionRate;
   const type = attr.elementReactionType;
   let zengFuMuti = 1;
@@ -203,7 +204,11 @@ const chargeArea = (attr) => {
   const juBianDamage = juBianBaseDamage * chargeRate * juBianIncrease * (1-juBianResistance);
     
   if(type === '蒸发' || type === '融化'){//出系数
-    zengFuMuti = rate * ( 2.78/(1+1400/elementMaster) + elementReactionTimes + 1);
+    const times = elementReactionAloneArr
+      .filter(res => res.type === type)
+      .reduce((sum, now) => sum += now.value, 0);
+    // log('额外蒸发倍率',times)
+    zengFuMuti = rate * ( 2.78/(1+1400/elementMaster) + times + 1);
   }
   return {zengFuMuti, juBianDamage, type};
 };

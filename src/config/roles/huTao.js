@@ -24,7 +24,7 @@ export function huTao(level, stars, skills=[1,1,1]){
     //天赋2.半血+.33火伤,定为全程半血,全程吃到效果
     if(level >= 70){
       this.elementChargeRefine = {name: 'huTao_talent2_elementCharge', value: [0,.33,0,0,0,0,0,0], type: 'number'};
-      log(this)
+      // log(this)
     }
   };
 
@@ -115,7 +115,7 @@ export function huTao(level, stars, skills=[1,1,1]){
 
     this.az = (startIdx) => {
 
-      console.log(startIdx)
+      // console.log(startIdx)
 
       const start = startIdx;//取第一个
       const attr = {
@@ -332,6 +332,11 @@ export function huTao(level, stars, skills=[1,1,1]){
             type: 'message',
             message: `第${idxNew/10}秒，胡桃进入彼岸蝶舞状态，攻击提升${Math.round(attackAdd)}。`,
           });
+          //魔女套叠层
+          this.eventTrigger.filter(res => res.bindAction === 'e').forEach(res => {
+            res.reward();
+          });
+          //攻击加成
           this.attackRefine = {
             name: 'huTao_skillE_benefit',
             value: attackAdd,

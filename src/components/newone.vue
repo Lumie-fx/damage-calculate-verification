@@ -35,7 +35,7 @@ const insert = [{
   level: 90,
   stars: 6,
   skill: [10,13,13],
-  wear: [{moNv: 4}],
+  wear: [{name: 'moNv', num: 4}],
   relics: {
     life: 5766,
     lifePercent: .327,
@@ -60,7 +60,7 @@ const insert = [{
   level: 90,
   stars: 4,
   skill: [8,9,12],
-  wear: [{jueYuan: 4}],
+  wear: [{name: 'jueYuan', num: 4}],
   relics: {
     life: 4780,
     lifePercent: .804,
@@ -94,7 +94,7 @@ export default {
       teamElement.add(res.element);
     })
 
-    const pack = function(name, level, role, weapon, relic, _super){
+    const pack = function(name, level, role, weapon, relic, suit, _super){
       this.name = name;
       this.level = level;
       this.front = false;
@@ -129,9 +129,6 @@ export default {
         //name: baseElementMaster | elementMasterRelic
         elementMasterArr: [{name: 'elementMaster_base', value: this.attr.elementMaster, type: 'number'}],
         elementMaster: 0,
-        //元素精通系数区间魔女套/莫娜1命 todo  超载/超导/燃烧/...
-        elementReactionTimesArr: [],
-        elementReactionTimes: 0,
         //name: baseElementCharge | elementChargeRelic
         elementChargeArr: [{name: 'elementCharge_base', value: this.attr.elementCharge, type: 'number'}],
         elementCharge: [0,0,0,0,0,0,0,0],   //[水火冰雷风岩草物]
@@ -141,7 +138,14 @@ export default {
         //todo 还有一些不能锁入面板的加成 区分
         defendMitigationArr: [],//角色独立减防区 如雷神2命
         defendMitigation: 0,
+
+        //只存, 中间不计算, 最后计算按内部规则实现, 如: 元素精通系数区间魔女套/莫娜1命
+        elementReactionAloneArr: [],
       };
+
+      //动作触发类, 时序相关:    绑定动作            触发事件   当前层     最大叠层    满层事件           一层持续/叠层时间是否拆分    结束事件
+      //        {name: 'id',bindAction: 'a/e/q', reward(), now: 1, max: 1/2/3, maxReward(), duration: 100/[100,100,100], durationEnd()}
+      this.eventTrigger = [];
 
       const defined = {
         elementChargeRefine: {
@@ -211,6 +215,10 @@ export default {
 
       //圣遗物绑定
       relics.init.bind(this)(relic);
+      //圣遗物套装
+      suit.forEach(res => {
+        sywSuit[res.name].bind(this)(res.num);
+      });
       //武器绑定
       weapon.refine.bind(this)();
       //talent绑定
@@ -231,6 +239,7 @@ export default {
           roles[name](roll.level, roll.stars, roll.skill),
           weapons[weapon.name](weapon.level, weapon.stars, name),
           roll.relics,
+          roll.wear,
           this
         );
       });
@@ -459,7 +468,7 @@ export default {
       packActions.forEach(packAction => {
         if(packAction.type === '持续'){
           if(!_.find(actionList, {name: packAction.name})){
-            packAction.duringStart(i);//生效
+            packAction.duringStart(i);//生效 $001
             actionList.push(packAction);//当前执行中
           }
         }
@@ -521,6 +530,19 @@ export default {
 
 
       // log(i, huTao.refineAttr.attack ,packActions.name);//下一个
+      // log(i, JSON.parse(JSON.stringify(teamPack.huTao.refineAttr)))
+
+      //触发类事件的持续和结束
+      teamPack.team.forEach(role => {
+        role.eventTrigger.forEach(timingEvent => {
+          if(timingEvent?.duration > 0){
+            timingEvent.duration --;
+          }
+          if(timingEvent?.duration === 0){
+            timingEvent.durationEnd();
+          }
+        })
+      });
 
 
       packActions.forEach(packAction => {
@@ -532,10 +554,6 @@ export default {
       });
 
     }
-
-
-
-
 
     const notes = damageCount(teamPack.note);
 
