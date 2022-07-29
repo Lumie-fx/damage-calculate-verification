@@ -535,6 +535,7 @@ export default {
       //触发类事件的持续和结束
       teamPack.team.forEach(role => {
         role.eventTrigger.forEach(timingEvent => {
+          //todo duration = number or array 分别叠层的情况:冬极白星
           if(timingEvent?.duration > 0){
             timingEvent.duration --;
           }
