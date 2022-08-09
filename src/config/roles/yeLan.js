@@ -8,6 +8,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
   const name = 'yeLan';
 
   const basic = {//lv90
+    weaponType: '弓',
     life: 14450,
     attack: 244,
     defend: 548,
@@ -135,7 +136,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
         from: name,
         name: 'q',
         sequence: 15,     //todo 具体帧
-        damageMultiple: talentDamage.yeLan.q[skills[1]-1].base,
+        damageMultiple: talentDamage.yeLan.q[skills[2]-1].base,
         damageBase: [{base: 'life', rate: 1, from: name}],
         damageType: 'Q',
         attach: {

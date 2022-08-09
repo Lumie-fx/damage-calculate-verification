@@ -10,6 +10,8 @@ let bindAttackTimeDelayArr = []; //延迟伤害结算
 
 export const chargeElementSequence = function(idx, sequenceArr){
 
+  this.elementPoolMonster = elementPool;
+
   //到这里还是独立的一循环执行一次  ==> 其实只会独立执行
 
   //elementPool 每个元素留存-0.1s的量
@@ -57,17 +59,37 @@ export const chargeElementSequence = function(idx, sequenceArr){
 
       // log('动作',sequence.damageType, idx, this.attackBindFlag, this.attackBindTime)
 
+      //todo -- 被动触发晚了.1s 没有及时生效
+      this.team.forEach(role => {
+        role.eventTrigger.forEach(timingEvent => {
+          //
+          if(timingEvent.type === '2'){
+            //使用的与伤害类型一致
+            if(sequence.damageType === timingEvent.bindAction && timingEvent.open && sequence.from === timingEvent.from){
+              log(idx, '阿贝多触发剑被动',timingEvent.bindAction,sequence.from)
+              timingEvent.reward();
+              timingEvent.open = false;
+            }
+          }
+        })
+      });
+
+
       elementReaction.bind(this)(idx, {...elementAttach, sequence});
 
+// log(idx,sequence.damageType,sequence.damageMultiple,sequence.from)
+
       //普攻附带协同攻击
-      if(sequence.damageType === 'A'){
+      // if(sequence.damageType === 'A'){
         // this.attackBindArr.sort((a,b) => {
         //   return a.sequence - b.sequence;
         // });
         this.attackBindArr.forEach(sequenceObj => {
-          if(sequenceObj.bind === 'A'){
-            const bindAttackKey = sequenceObj.from+'_'+sequenceObj.name;
+          // log(sequenceObj)
 
+          const func = () => {
+
+            const bindAttackKey = sequenceObj.from+'_'+sequenceObj.name;
             // log(idx, bindAttackKey)
 
             if(!_.find(bindAttackTimeArr, {name: bindAttackKey})){
@@ -79,8 +101,10 @@ export const chargeElementSequence = function(idx, sequenceArr){
               });
             }
             const bindAttackObj = _.find(bindAttackTimeArr, {name: bindAttackKey});
+// log(idx, JSON.parse(JSON.stringify(bindAttackObj)))
             if(idx - bindAttackObj.time >= sequenceObj.delay){
               bindAttackObj.time = idx;
+              //如果需要延迟触发
               if(sequenceObj?.sequenceDelay > 0){
                 bindAttackTimeDelayArr.push({
                   idx,
@@ -91,13 +115,27 @@ export const chargeElementSequence = function(idx, sequenceArr){
                 chargeElementSequence.bind(this)(idx, sequenceObj.sequenceArr);
               }
             }
+          };
+          //普攻附带协同攻击
+          if(sequenceObj.bind === 'A' && sequence.damageType === 'A'){
+            func();
+          }
+          //全伤害触发
+          if(sequenceObj.bind === 'damage' && sequence.damageMultiple > 0){
+            if(sequenceObj.from === 'aBeiDuo' && sequence.name === 'e_abd_only'){
+              //阿贝多自己的e不触发 todo 有个bug - 刹那之花不能被协同攻击触发(夜兰玲珑骰)
+            }else{
+// log(idx, JSON.parse(JSON.stringify(sequence)))
+              func();
+            }
           }
         });
-      }
+      // }
 
 
       if(sequence.damageType === 'E'){
-        log(sequence)
+        // log(sequence)
+
       }
 
       if(sequence.damageType === 'Q'){
@@ -107,6 +145,7 @@ export const chargeElementSequence = function(idx, sequenceArr){
           // log(JSON.parse(JSON.stringify(this.huTao.refineAttr)))
         }
       }
+
     });
   }
 
@@ -292,6 +331,13 @@ function attach(item, idx){
   const message = item.sequence?.message
 
   if(elementPool.length === 1){
+
+    //todo
+    if(item.sequence.from === 'aBeiDuo'){
+      log(idx,'abd doing1')
+    }
+
+
     this.note.push({
       from: item.sequence.from,
       timing: idx,
@@ -306,6 +352,12 @@ function attach(item, idx){
   if(elementPool.length === 2){
     //融化/蒸发/.. 1.5/2  true/false(2种同属性元素)
     const {type,rate,isReaction,amount0} = reaction2Element(elementPool, idx);
+
+    //todo
+    if(item.sequence.from === 'aBeiDuo'){
+      log(idx,'abd doing2')
+    }
+
 
     if(isReaction){
       this.note.push({
@@ -344,6 +396,13 @@ function attach(item, idx){
 
 function notAttach(item, idx){
   // log('not attach', idx, item.sequence.name);
+
+  //todo
+  if(item.sequence.from === 'aBeiDuo'){
+    log(idx,'abd doing3')
+  }
+
+
   this.note.push({
     from: item.sequence.from,
     timing: idx,
@@ -360,11 +419,17 @@ function packDamageItem(item, reaction){
   const {type, rate} = reaction || {};
   const name = item.sequence.from;
 
+  log('==================')
+  log(JSON.parse(JSON.stringify(this[name].refineAttr.increaseAddOn)))
+
   return {
+    from: name,
     level: this[name].level,                                   //等级
+    weaponType: this[name].weaponType,
     attack: this[name].refineAttr.attack,                      //攻击
     life: this[name].refineAttr.life,                          //生命
     defend: this[name].refineAttr.defend,                      //防御
+    damageType: item.sequence.damageType,                      //伤害类型
     damageBase: item.sequence.damageBase,                      //伤害基于? 攻击/生命/多个..  [额外倍率]
     damageMultiple: item.sequence.damageMultiple,              //倍率
     critical: this[name].refineAttr.critical,                  //暴击
@@ -381,6 +446,7 @@ function packDamageItem(item, reaction){
     monsterMinusDefendOnly: this[name].refineAttr.defendMitigation,//伤害对象防御减免--角色独立(雷神2命)
     monsterBaseResistance: this.resistanceMitigationBase,      //伤害对象基础抗性
     monsterMinusResistance: this.resistanceMitigation,         //伤害对象抗性减益
+    increaseAddOn: _.cloneDeep(this[name].refineAttr.increaseAddOn),        //额外伤害组件
   }
 }
 
@@ -456,13 +522,13 @@ function reaction2Element(pool, idx){
 
 
   if(elementName2 === '风'){
-    type = '扩散';
+    type = '扩散-' + elementName1;
     //todo 风套减抗区
     reactionType1(pool, .5);
   }
 
   if(elementName2 === '岩'){
-    type = '结晶';
+    type = '结晶-' + elementName1;
     //todo 磐岩增伤区
     reactionType1(pool, .5);
   }
@@ -538,7 +604,7 @@ function reaction2Element(pool, idx){
     isReaction = false;
   }
 
-  //todo 草为1元素的情况
+  //todo 草为第一个1元素的情况
 
   return {type,rate,isReaction,amount0:pool?.[0]?.amount};
 }

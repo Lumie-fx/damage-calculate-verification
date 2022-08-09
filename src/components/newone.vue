@@ -11,18 +11,17 @@
 <script>
 
 import _ from 'lodash'
-import enumerate from '../config/enumerate'
 import * as roles from '../config/roles/index'
 import weapons from '../config/weapons'
-import sywSuit from '../config/sywSuit'
+import relicSuit from '../config/relicSuit'
 import {chargeElementSequence} from '../config/elementCharge'
 import {damageCount} from '../config/damageCount'
 
 import relics from '../config/relics' //模拟当前圣遗物属性
+import utils from "../config/utils";
 
 
-
-//数据 todo 接入miao-plugin查询插件数据
+//数据 todo 接入miao-plugin查询插件数据 - enka
 
 const insert = [{
   name: 'huTao',
@@ -74,6 +73,56 @@ const insert = [{
     elementMaster: 42,
     elementCharge: [.466,0,0,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
+},{
+  name: 'zhongLi',
+  element: '岩',
+  weapon: {
+    name: 'huMoZhiZhang',
+    level: 90,
+    stars: 2,
+  },
+  level: 90,
+  stars: 0,
+  skill: [9,9,10],
+  wear: [{name: 'jueDouShi', num: 2},{name: 'qianYan', num: 2}],
+  relics: {
+    life: 5766,
+    lifePercent: 1.125,
+    attack: 311,
+    attackPercent: .163,
+    defend: 0,
+    defendPercent: .117,
+    critical: .595,
+    criticalDamage: .645,
+    energyCharge: .065,
+    elementMaster: 19,
+    elementCharge: [0,0,0,0,0,.466,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+  },
+},{
+  name: 'aBeiDuo',
+  element: '岩',
+  weapon: {
+    name: 'chenShaZhiFangChui',
+    level: 90,
+    stars: 5,
+  },
+  level: 90,
+  stars: 0,
+  skill: [1,9,6],
+  wear: [{name: 'huaGuan', num: 2}],
+  relics: {
+    life: 5228,
+    lifePercent: .105,
+    attack: 344,
+    attackPercent: .041,
+    defend: 35,
+    defendPercent: .788,
+    critical: .614,
+    criticalDamage: .909,
+    energyCharge: .091,
+    elementMaster: 91,
+    elementCharge: [0,0,0,0,0,.466,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+  },
 }];
 
 const insertRoles = insert.map(res=>res.name);
@@ -87,12 +136,15 @@ export default {
 
     //碎冰反应未考虑
     //莫娜星异受冻结影响时间延长未考虑
-    //todo 圣遗物套装
 
     let teamElement = new Set();
     insert.forEach(res=>{
       teamElement.add(res.element);
-    })
+    });
+
+    const weaponNameList = ['剑','大剑','枪','弓','书'];
+    const actionNameList = ['A','Z','D','E','Q'];// ...还有其他
+    const elementNameList = ['水','火','冰','雷','风','岩','草','物'];
 
     const pack = function(name, level, role, weapon, relic, suit, _super){
       this.name = name;
@@ -101,6 +153,7 @@ export default {
 
       this.teamElementNum = teamElement.size;
       this.super = _super;
+      this.weaponType = role.basic.weaponType;//武器类型
 
       this.attr = {
         ...role.basic,
@@ -108,39 +161,41 @@ export default {
       };
 
       this.refineAttr = {
-        //name: baseLife | lifeRelic lifePercentRelic | lifeWeapon lifeWeaponPassive
+        //生命
         lifeArr: [{name: 'life_base', value: this.attr.life, type: 'number'}],
         life: 0,
-        //name: baseAttack | attackRelic attackPercentRelic | attackWeapon attackWeaponPassive
+        //攻击
         attackArr: [{name: 'attack_base', value: this.attr.attack, type: 'number'}],
         attack: 0,
-        //name: baseDefend | defendRelic defendPercentRelic
+        //防御
         defendArr: [{name: 'defend_base', value: this.attr.defend, type: 'number'}],
         defend: 0,
-        //name: baseCritical | criticalRelic
+        //暴击
         criticalArr: [{name: 'critical_base', value: this.attr.critical, type: 'number'}],
         critical: 0,
-        //name: baseCriticalDamage | criticalDamageRelic criticalDamageWeapon
+        //爆伤
         criticalDamageArr: [{name: 'criticalDamage_base', value: this.attr.criticalDamage, type: 'number'}],
         criticalDamage: 0,
-        //name: baseEnergyCharge | energyChargeRelic
+        //充能
         energyChargeArr: [{name: 'energyCharge_base', value: this.attr.energyCharge, type: 'number'}],
         energyCharge: 0,
-        //name: baseElementMaster | elementMasterRelic
+        //精通
         elementMasterArr: [{name: 'elementMaster_base', value: this.attr.elementMaster, type: 'number'}],
         elementMaster: 0,
-        //name: baseElementCharge | elementChargeRelic
+        //增伤&元素类型
         elementChargeArr: [{name: 'elementCharge_base', value: this.attr.elementCharge, type: 'number'}],
         elementCharge: [0,0,0,0,0,0,0,0],   //[水火冰雷风岩草物]
         elementType: this.attr.elementType, //[水火冰雷风岩草物]
-        //todo 其他增伤区间 [普攻,重击,下落攻击,元素战技,元素爆发,单手剑角色等,法器角色等]
-        //todo 这边的话想用枚举的统一增伤数组, 根据首位区分
-        //todo 还有一些不能锁入面板的加成 区分
+        //独立额外减防
         defendMitigationArr: [],//角色独立减防区 如雷神2命
         defendMitigation: 0,
-
+        //个人额外反应加成
         //只存, 中间不计算, 最后计算按内部规则实现, 如: 元素精通系数区间魔女套/莫娜1命
         elementReactionAloneArr: [],
+        //其他增伤区间 [普攻,重击,下落攻击,元素战技,元素爆发,单手剑角色等,法器角色等]
+        //有属性依赖的放refine中进行transfer, 见$002, 没属性依赖的直接push, 格式需与$002一致
+        increaseAddOn: [],
+        //todo 还有一些不能锁入面板的加成 区分
       };
 
       //动作触发类, 时序相关:    绑定动作            触发事件   当前层     最大叠层    满层事件           一层持续/叠层时间是否拆分    结束事件
@@ -164,6 +219,29 @@ export default {
               })
               return sum;
             }, [0,0,0,0,0,0,0,0]);
+          }
+        },
+        //单项提升
+        increaseAddOnRefine: {
+          set: (obj) => {
+            // obj = {
+            //   name: 'relic_jueYuan_4',
+            //   effect: {
+            //     effectAction: [0,0,0,0,1],        //生效伤害类型[A,Z,D,E,Q, ...]
+            //     effectWeaponType: [1,1,1,1,1],    //生效武器类型 [剑,大剑,枪,弓,书]
+            //     effectArea: 'elementCharge',      //生效乘区, 多个多次赋值(如小鹿6命)
+            //     effectElement: [1,1,1,1,1,1,1,1], //生效属性, 额外算作系数使用=>如匣里灭辰 [1,1,0,0,0,0,0,0] (当然这里不算, 灭辰需要打水/火元素影响的人才有增伤)
+            //     attachedBy: [0,0,0,0,0,0,0,0],    //附着需求
+            //     effectValue: .5,
+            //   },
+            //   timeCount: res.timeCount,           //置入计时 todo
+            // };
+
+            if(_.find(this.refineAttr.increaseAddOn, {name: obj.name})){
+              this.refineAttr.increaseAddOn[_.findIndex(this.refineAttr.increaseAddOn, {name: obj.name})] = obj;
+            }else{
+              this.refineAttr.increaseAddOn.push(obj);
+            }
           }
         }
       };
@@ -202,9 +280,46 @@ export default {
             const transfer = arr.filter(res => res.type === 'transfer');
             if(transfer.length > 0){
               transfer.forEach(res => {
-                //如护摩:life=>attack, 这里就增加attackRefine的监听
-                //                         imp:2个name保持一致      值                                     类型应该只有数字
-                this[res.to + 'Refine'] = {name: res.name, value: this.refineAttr[res.from] * res.value, type: 'number'};
+                if(utils.queryValueType(res.to) === 'String'){
+                  let transferValue = this.refineAttr[res.from] * res.value;
+
+                  //有最大值限制
+                  // if(res.max){
+                  //   const based = res.max.base ? 'attr' : 'refineAttr';
+                  //   if(transferValue > this[based] * res.max.amount){
+                  //     transferValue = this[based] * res.max.amount;
+                  //   }
+                  //   log(based,this[based],res.max.amount,transferValue)
+                  // }
+
+                  //如护摩:life=>attack, 这里就增加attackRefine的监听
+                  //                         imp:2个name保持一致      值             类型应该只有数字
+                  this[res.to + 'Refine'] = {name: res.name, value: transferValue, type: 'number'};
+                }else if(utils.queryValueType(res.to) === 'Object'){
+                  //定为特殊(特定)转化
+                  let value = this.refineAttr[res.from] * res.value;
+                  if(res.max){
+                    if(res.max.from){
+                      //todo 有from判断max.base和max.from 对应$002
+                      //如类似胡桃E加成是收基础攻击影响
+                      //暂时还没有遇到
+                    }else{
+                      if(value > res.max.amount) value = res.max.amount;
+                    }
+                  }
+                  this.increaseAddOnRefine = {
+                    name: res.name,
+                    effect: {
+                      effectAction: res.to.effectAction,
+                      effectWeaponType: res.to.effectWeaponType,
+                      effectArea: res.to.effectArea,
+                      effectElement: res.to.effectElement,
+                      attachedBy: res.to.attachedBy,
+                      effectValue: value,
+                    },
+                    timeCount: res.timeCount
+                  };
+                }
               });
             }
           }
@@ -217,7 +332,7 @@ export default {
       relics.init.bind(this)(relic);
       //圣遗物套装
       suit.forEach(res => {
-        sywSuit[res.name].bind(this)(res.num);
+        relicSuit[res.name].bind(this)(res.num);
       });
       //武器绑定
       weapon.refine.bind(this)();
@@ -314,6 +429,14 @@ export default {
       this.resistanceMitigationArr = []; //{name: 'zhongLi_skillE_long', value: [-.2,-.2,-.2-.2-.2-.2-.2-.2], type: 'number'}
       this.resistanceMitigation = [0,0,0,0,0,0,0,0];    // -最后计算
 
+      this.elementPoolMonster = [];//怪物元素池
+      this.elementPoolMine = [];   //角色元素池
+
+      this.geoItems = 0;           //当前岩造物数量
+      this.beResonatedItems = 0;   //被共鸣物体数量
+
+      this.shield = [];            //护盾{type:'火',time:100},..
+
       //记录怪物减益buff todo 测试
       const teamDefined = {
         resistanceMitigationRefine: {
@@ -396,7 +519,7 @@ export default {
     let _actions = [];
 
     //todo 可选
-    const chain = 'yeLan:q-a-e2|huTao:e-az10-q';
+    const chain = 'aBeiDuo:e|zhongLi:el|yeLan:q-a-e2|huTao:e-az10-q';
 
     const rollChainArr = chain.split('|');
 
@@ -455,6 +578,9 @@ export default {
         continue;
       }
 
+      //元素剩余
+      // log(i,teamPack.elementPoolMonster?.[0]?.amount,teamPack.elementPoolMonster?.[0]?.sequence?.attach?.element)
+
       if(!thisActionArr){
         break; //所有招式结束
       }
@@ -462,8 +588,6 @@ export default {
       if(!packActions){ //触发 返回arr了
         packActions = thisActionArr(i);  //sequence []  --一个last内pack的多个子action值
       }
-
-      // log(i, JSON.parse(JSON.stringify(teamPack.withAttackSequenceArr)))
 
       packActions.forEach(packAction => {
         if(packAction.type === '持续'){
@@ -475,6 +599,13 @@ export default {
         if(packAction.type === '延迟伤害'){//具体分析
           //1.胡桃雪梅香
           if(packAction.name === 'huTao_skill_E_xueMeiXiang'){
+            if(!_.find(actionList, {name: packAction.name})){
+              packAction.duringStart(i);//生效  =>  传入i在内部计算
+              actionList.push(packAction);//当前执行中
+            }
+          }
+          //2.钟离共鸣
+          if(packAction.name === 'zhongLi_skill_E_gongMing'){
             if(!_.find(actionList, {name: packAction.name})){
               packAction.duringStart(i);//生效  =>  传入i在内部计算
               actionList.push(packAction);//当前执行中
@@ -535,15 +666,36 @@ export default {
       //触发类事件的持续和结束
       teamPack.team.forEach(role => {
         role.eventTrigger.forEach(timingEvent => {
-          //todo duration = number or array 分别叠层的情况:冬极白星
-          if(timingEvent?.duration > 0){
-            timingEvent.duration --;
+          //类似魔女套叠层触发效果
+          if(timingEvent.type === '1'){
+            //todo duration = number or array 分别叠层的情况:冬极白星
+            if(timingEvent?.duration > 0){
+              timingEvent.duration --;
+            }
+            if(timingEvent?.duration === 0){
+              timingEvent.durationEnd();
+            }
           }
-          if(timingEvent?.duration === 0){
-            timingEvent.durationEnd();
+          //
+          if(timingEvent.type === '2'){
+            if(timingEvent?.duration > 0){
+              timingEvent.duration --;
+            }
+            if(timingEvent?.cd > 0){
+              timingEvent.cd --;
+            }
+            if(timingEvent?.duration === 0){
+              timingEvent.durationEnd();
+            }
+            if(timingEvent?.cd === 0){
+              timingEvent.cdEnd();
+            }
           }
         })
       });
+
+
+      log(i, JSON.parse(JSON.stringify(teamPack?.aBeiDuo.refineAttr.increaseAddOn)))
 
 
       packActions.forEach(packAction => {

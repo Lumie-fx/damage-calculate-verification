@@ -3,6 +3,7 @@ import _ from 'lodash'
 
 const log = console.log;
 
+const elementNameList = ['水','火','冰','雷','风','岩','草','物'];
 
 export const damageCount = function(note){
 
@@ -17,6 +18,7 @@ export const damageCount = function(note){
         attack: 1115,
         critical: 0.877,
         criticalDamage: 3.276,
+        damageType: 'Q',                      //伤害类型
         damageBase: [{base: 'life', rate: 1, from: 'yeLan'}],
         damageMultiple: 0.1023,
         defend: 624.172,
@@ -28,6 +30,7 @@ export const damageCount = function(note){
         elementType: (8) [1, 0, 0, 0, 0, 0, 0, 0],
         level: 90,
         life: 34893.8,
+        weaponType: '枪',
 
         monsterLevel: 90,
         monsterBaseDefend: 500,
@@ -35,6 +38,7 @@ export const damageCount = function(note){
         monsterMinusDefendOnly: 0,
         monsterBaseResistance: (8) [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
         monsterMinusResistance: (8) [0, 0, 0, 0, 0, 0, 0, 0],
+        increaseAddOn: []
       },
       timing: 16,
       message: "第/time/秒，胡桃使用安神秘法(面板锁定)，造成/damage/点伤害。", --感觉不需要
@@ -61,7 +65,9 @@ export const damageCount = function(note){
         });
       }
 
-      // log(JSON.parse(JSON.stringify(attr)))
+      // if(sequence.from === 'aBeiDuo' && sequence.timing === 39){
+      //   log(sequence.timing, JSON.parse(JSON.stringify(attr)))
+      // }
 
       const damageBase = attackArea(attr);
       const muti = mutiArea(attr);
@@ -79,6 +85,8 @@ export const damageCount = function(note){
           message: `第${sequence.timing/10}秒，${roll2Zh[sequence.from].name}触发${type}，造成${juBianDamage}点伤害。`,
           reactionType: type,
           damage: juBianDamage,
+          critical: false,
+          timing: sequence.timing/10,
         });
       }else{
         let reactionName = '',
@@ -86,12 +94,26 @@ export const damageCount = function(note){
         if(['蒸发','融化'].includes(type)){
           reactionName = `(${type})`;
         }
+
+        if(sequence.from === 'aBeiDuo'){
+          console.log(sequence.timing, damageBase, muti, criticalRate,damageIncrease ,defendMinus ,resistanceMinus , zengFuMuti)
+        }
+
+        let damageTypeName = '物理';
+        const _elementType = elementNameList[attr.elementType.indexOf(1)];
+        if(_elementType !== '物'){
+          damageTypeName = _elementType + '元素';
+        }
+
         const damage = Math.round(damageBase * muti * criticalRate * damageIncrease * defendMinus * resistanceMinus * zengFuMuti);
         noteList.push({
           type: 'message',
-          message: `第${sequence.timing/10}秒，${roll2Zh[sequence.from].name}使用${sequence.actionName}，造成${damage}${reactionName}${isCritical}点伤害。`,
+          message: `第${sequence.timing/10}秒，${roll2Zh[sequence.from].name}使用${sequence.actionName}，造成${damage}${reactionName}${isCritical}点${damageTypeName}伤害。`,
           reactionType: type,
           damage,
+          critical,
+          timing: sequence.timing/10,
+          elementType: attr.elementType,
         });
       }
     }
@@ -107,9 +129,17 @@ const attackArea = (attr) => {
   let damageBase = 0;
   attr.damageBase.forEach(res => {
     //       attr.attack or attr.life
+
     damageBase += attr[res.base] * res.rate;
   });
-  return damageBase;
+
+  if(attr.from === 'aBeiDuo'){
+    console.log('==========', JSON.parse(JSON.stringify(attr)))
+  }
+
+  const addOn = assignAddOns('attackArea', attr);
+
+  return damageBase + addOn;
 };
 
 //倍率乘区
@@ -118,7 +148,7 @@ const mutiArea = (attr) => {
 };
 
 //双暴乘区
-//todo 特殊暴击计算 (如鱼叉对大招暴击, 小鹿6命e暴击)
+//特殊暴击计算 (如鱼叉对大招暴击, 小鹿6命e暴击) -- resolve assignAddOns
 const criticalArea = (attr) => {
   const criticalFlag = Math.random() <= attr.critical;
   return {
@@ -132,7 +162,10 @@ const criticalArea = (attr) => {
 const increaseArea = (attr) => {
   const elementType = attr.elementType;
   const elementIndex = elementType.indexOf(1);
-  return attr.elementCharge[elementIndex]; //增伤比
+
+  const addOn = assignAddOns('elementCharge', attr);
+
+  return attr.elementCharge[elementIndex] + addOn; //增伤比
 };
 
 //怪物防御乘区 输出承伤比率 .5x
@@ -213,6 +246,47 @@ const chargeArea = (attr) => {
   return {zengFuMuti, juBianDamage, type};
 };
 
+const weaponNameList = ['剑','大剑','枪','弓','书'];
+const actionNameList = ['A','Z','D','E','Q'];// ...还有其他
 
+//细碎增益 todo 暂时只测试绝缘4 -增伤类
+const assignAddOns = (type, attr) => {
+  if(!attr.increaseAddOn) {
+    return 0;
+  }
+  const addOnArr = attr.increaseAddOn;
+  const effectArr = addOnArr.filter(item => item.effect.effectArea === type);
+  //attr.weaponType=弓 attr.elementType=[1,0,0,0,0,0,0,0] attr.damageType=Q
 
+  const increase = effectArr.reduce((sum, now) => {
+    // now.effect.effectWeaponType
+    let flag = true;
+    //武器不匹配
+    if(now.effect.effectWeaponType[weaponNameList.indexOf(attr.weaponType)]===0){
+      flag = false;
+    }
+    //动作不匹配
+    if(now.effect.effectAction[actionNameList.indexOf(attr.damageType)]===0){
+      flag = false;
+    }
+    //元素不匹配
+    if(now.effect.effectElement[attr.elementType.indexOf(1)] === 0){
+      flag = false;
+    }
+    //todo 附着不匹配 - 匣里灭辰等
+
+    if(flag){
+      if(type === 'attackArea'){
+        console.log('==========================',attr[now.effect.effectValue.base],now.effect.effectValue.rate)
+        return attr[now.effect.effectValue.base] * now.effect.effectValue.rate
+      }else{
+        return now.effect.effectValue;
+      }
+    }else{
+      return 0;
+    }
+  }, 0);
+
+  return increase;
+};
 

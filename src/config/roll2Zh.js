@@ -28,4 +28,17 @@ export default {
       }
     }
   },
+
+  zhongLi: {
+    name: '钟离',
+    action: {
+
+    }
+  },
+  aBeiDuo: {
+    name: '阿贝多',
+    action: {
+
+    }
+  }
 }

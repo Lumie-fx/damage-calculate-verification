@@ -8,6 +8,7 @@ export function huTao(level, stars, skills=[1,1,1]){
   const name = 'huTao';
 
   const basic = {//lv90
+    weaponType: '枪',
     life: 15552,
     attack: 106,
     defend: 876,
@@ -327,13 +328,16 @@ export function huTao(level, stars, skills=[1,1,1]){
           return idxNew - start === attr.last - 1
         },
         duringStart: (idxNew)=>{
-          const attackAdd = this.refineAttr.life * talentDamage.huTao.e[skills[1]-1].base;
+          let attackAdd = this.refineAttr.life * talentDamage.huTao.e[skills[1]-1].base;
+          if(attackAdd > this.attr.attack * 4){
+            attackAdd = this.attr.attack * 4;
+          }
           this.super.note.push({
             type: 'message',
             message: `第${idxNew/10}秒，胡桃进入彼岸蝶舞状态，攻击提升${Math.round(attackAdd)}。`,
           });
           //魔女套叠层
-          this.eventTrigger.filter(res => res.bindAction === 'e').forEach(res => {
+          this.eventTrigger.filter(res => res.bindAction === 'E').forEach(res => {
             res.reward();
           });
           //攻击加成
@@ -378,6 +382,8 @@ export function huTao(level, stars, skills=[1,1,1]){
         cd: 150,
         last: 17,
       };
+
+      //todo 施加雪梅香
 
       //1.不考虑回血
       //2.算高位倍率
