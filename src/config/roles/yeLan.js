@@ -56,7 +56,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceA,
         damageMultiple: talentDamage.yeLan.a1[skills[0]-1].base,
         damageType: 'A',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,0,0,0,0,0,0,1],
           type: 'A1'+name,
@@ -100,7 +100,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
         name: 'e',
         sequence: 7,     // 0~7 对应的last=8为末尾   todo 具体帧
         damageMultiple: talentDamage.yeLan.e[skills[1]-1].base,
-        damageBase: [{base: 'life', rate: 1, from: name}],
+        damageBase: [{base: 'life', rate: 1, from: name, main: true}],
         damageType: 'E',
         attach: {
           element: [1,0,0,0,0,0,0,0],
@@ -137,7 +137,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
         name: 'q',
         sequence: 15,     //todo 具体帧
         damageMultiple: talentDamage.yeLan.q[skills[2]-1].base,
-        damageBase: [{base: 'life', rate: 1, from: name}],
+        damageBase: [{base: 'life', rate: 1, from: name, main: true}],
         damageType: 'Q',
         attach: {
           element: [1,0,0,0,0,0,0,0],
@@ -152,7 +152,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
         sequenceDelay: 2,    //此处代表触发延迟
         delay: 9,       //最小间隔时间
         damageMultiple: talentDamage.yeLan.q[skills[2]-1].linLongTou,
-        damageBase: [{base: 'life', rate: 1, from: name}],
+        damageBase: [{base: 'life', rate: 1, from: name, main: true}],
         damageType: 'Q',
         attach: {
           element: [1,0,0,0,0,0,0,0],
@@ -167,7 +167,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
         sequenceDelay: 3,     //此处代表触发延迟
         delay: 18,       //最小间隔时间
         damageMultiple: .14,
-        damageBase: [{base: 'life', rate: 1, from: name}],
+        damageBase: [{base: 'life', rate: 1, from: name, main: true}],
         damageType: 'Q',
         attach: {
           element: [1,0,0,0,0,0,0,0],

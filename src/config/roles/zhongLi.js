@@ -21,15 +21,14 @@ export function zhongLi(level, stars, skills=[1,1,1]){
     otherCharge: [] //英文直接命名 AYAKA_ATTACK20
   };
 
-  //todo
   //1命2个e todo 共鸣流  - 多个岩脊/岩创造物
-  //2命q触发护盾 todo
+  //2命q触发护盾 - ok
 
   const damageBase = {
-    e: [{base: 'attack', rate: 1, from: name}],
-    el: [{base: 'attack', rate: 1, from: name}],
-    gongMing: [{base: 'attack', rate: 1, from: name}],
-    q: [{base: 'attack', rate: 1, from: name}],
+    e: [{base: 'attack', rate: 1, from: name, main: true}],
+    el: [{base: 'attack', rate: 1, from: name, main: true}],
+    gongMing: [{base: 'attack', rate: 1, from: name, main: true}],
+    q: [{base: 'attack', rate: 1, from: name, main: true}],
   };
 
   //天赋2aeq 附加生命的增伤
@@ -54,9 +53,8 @@ export function zhongLi(level, stars, skills=[1,1,1]){
       type: 'A_zl',
       time: 95,
     },
+    lockedAttr: null,
   };
-
-  //todo 锁面板
 
   const gongMing = (attr, that) => {
     return {
@@ -74,7 +72,8 @@ export function zhongLi(level, stars, skills=[1,1,1]){
         // const z_effect_time = attr.sequenceZ; //这个是重击触发的轴
         this.endTime = this.last + idxNew + attr.sequenceEL;//todo 8是长e后岩脊生成的时间
         this.lastStartTime = idxNew + attr.sequenceEL;
-        // console.log('雪梅香生效/刷新')
+        //锁面板
+        gongMingSequence.lockedAttr = _.cloneDeep(that.super[name].refineAttr);
       },
       // refresh(idxNew){ //搜 type === '延迟伤害'
       //   this.endTime = this.last + idxNew;
@@ -154,6 +153,7 @@ export function zhongLi(level, stars, skills=[1,1,1]){
             value: new Array(8).fill(.2),
             type: 'number',
           };
+          that.super.shieldRefine = {type:'岩', name: 'zhongLi_E', time: 300};
         },
         during: (idxNew)=>{
           return {flag: idxNew - start === attr.during + attr.sequenceEL}; //last结束后触发duringEnd
@@ -173,6 +173,56 @@ export function zhongLi(level, stars, skills=[1,1,1]){
 
       //todo
       //2命触发护盾
+
+      const start = startIdx; //取第一个
+      const attr = {
+        cd: 120,
+        last: 21,
+        sequence: 16, //todo
+      };
+
+
+      const effect = [{
+        from: name,
+        name: 'q',
+        elementAmount: 40,   //能量
+        sequence: attr.sequence,
+        damageMultiple: talentDamage.zhongLi.q[skills[2]-1].base,
+        damageType: 'Q',
+        damageBase: damageBase.q,
+        attach: {
+          element: [0,0,0,0,0,1,0,0],
+          type: 'B',
+          time: 170,
+        },
+      }];
+
+      return [{
+        name: 'zhongLi_skill_Q',
+        main: true, //主序的、唯一的、必须存在的
+        last: attr.last,
+        lasting: (lastIdx)=>{
+          return lastIdx - start === attr.last - 1
+        },
+        type: '单次',
+        sequence: (lastIdx) => {
+          if(stars >= 2){
+            if(startIdx + attr.sequence === lastIdx){
+              that.super.resistanceMitigationRefine = {
+                name: 'zhongLi_e_long_resistance_20%',
+                value: new Array(8).fill(.2),
+                type: 'number',
+              };
+              that.super.shieldRefine = {type:'岩', name: 'zhongLi_E', time: 300};
+              that.super.note.push({
+                type: 'message',
+                message: `第${lastIdx/10}秒，钟离释放天星，由于2命效果，生成玉璋护盾，怪物所有抗性降低20%。`,
+              });
+            }
+          }
+          return effect.filter(res => lastIdx - start === res.sequence)
+        },
+      }]
 
     }
   };

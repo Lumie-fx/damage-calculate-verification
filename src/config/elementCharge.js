@@ -425,17 +425,17 @@ function packDamageItem(item, reaction){
   return {
     from: name,
     level: this[name].level,                                   //等级
-    weaponType: this[name].weaponType,
+    weaponType: this[name].weaponType,                         //武器类型
     attack: this[name].refineAttr.attack,                      //攻击
     life: this[name].refineAttr.life,                          //生命
     defend: this[name].refineAttr.defend,                      //防御
     damageType: item.sequence.damageType,                      //伤害类型
-    damageBase: item.sequence.damageBase,                      //伤害基于? 攻击/生命/多个..  [额外倍率]
+    damageBase: _.cloneDeep(item.sequence.damageBase),         //伤害基于? 攻击/生命/多个..  [额外倍率]
     damageMultiple: item.sequence.damageMultiple,              //倍率
     critical: this[name].refineAttr.critical,                  //暴击
     criticalDamage: this[name].refineAttr.criticalDamage,      //爆伤
-    elementType: item.sequence.attach.element,                 //元素类型
-    elementCharge: this[name].refineAttr.elementCharge,        //元素增伤
+    elementType: _.cloneDeep(item.sequence.attach.element),    //元素类型
+    elementCharge: _.cloneDeep(this[name].refineAttr.elementCharge), //元素增伤
     elementMaster: this[name].refineAttr.elementMaster,        //元素精通
     elementReactionType: type,                                 //反应类型
     elementReactionRate: rate,                                 //反应倍率
@@ -443,10 +443,10 @@ function packDamageItem(item, reaction){
     monsterLevel: this.monsterLevel,                           //伤害对象等级
     monsterBaseDefend: this.defendMitigationBase,              //伤害对象基础防御
     monsterMinusDefend: this.defendMitigation,                 //伤害对象防御减免
-    monsterMinusDefendOnly: this[name].refineAttr.defendMitigation,//伤害对象防御减免--角色独立(雷神2命)
-    monsterBaseResistance: this.resistanceMitigationBase,      //伤害对象基础抗性
-    monsterMinusResistance: this.resistanceMitigation,         //伤害对象抗性减益
-    increaseAddOn: _.cloneDeep(this[name].refineAttr.increaseAddOn),        //额外伤害组件
+    monsterMinusDefendOnly: this[name].refineAttr.defendMitigation,   //伤害对象防御减免--角色独立(雷神2命)
+    monsterBaseResistance: _.cloneDeep(this.resistanceMitigationBase),//伤害对象基础抗性
+    monsterMinusResistance: _.cloneDeep(this.resistanceMitigation),   //伤害对象抗性减益
+    increaseAddOn: _.cloneDeep(this[name].refineAttr.increaseAddOn),  //额外伤害组件
   }
 }
 

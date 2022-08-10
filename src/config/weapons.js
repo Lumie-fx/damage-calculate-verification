@@ -92,8 +92,6 @@ export default {
   //辰砂之纺锤
   chenShaZhiFangChui(level, stars, roleName){//lv90  1,2,3,4,5
 
-    log('====================',roleName)
-
     const wn = 'chenShaZhiFangChui';
 
     const attr = {

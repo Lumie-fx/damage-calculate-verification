@@ -55,7 +55,7 @@ export function aBeiDuo(level, stars, skills=[1,1,1]){
     sequenceDelay: 0,//后手覆盖
     delay: 20,       //最小间隔时间
     damageMultiple: talentDamage.aBeiDuo.e[skills[1]-1].hua,
-    damageBase: [{base: 'defend', rate: 1, from: name}],
+    damageBase: [{base: 'defend', rate: 1, from: name, main: true}],
     damageType: 'E',
     attach: {
       element: [0,0,0,0,0,1,0,0],
@@ -83,7 +83,7 @@ export function aBeiDuo(level, stars, skills=[1,1,1]){
         name: 'e_abd_only',
         sequence: attr.sequence,
         damageMultiple: talentDamage.aBeiDuo.e[skills[1]-1].base,
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         damageType: 'E',
         attach: {
           element: [0,0,0,0,0,1,0,0],

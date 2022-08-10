@@ -70,7 +70,6 @@ export const damageCount = function(note){
       // }
 
       const damageBase = attackArea(attr);
-      const muti = mutiArea(attr);
       const {critical,criticalRate} = criticalArea(attr);
       const damageIncrease = increaseArea(attr);
       const defendMinus = defendArea(attr);
@@ -96,7 +95,7 @@ export const damageCount = function(note){
         }
 
         if(sequence.from === 'aBeiDuo'){
-          console.log(sequence.timing, damageBase, muti, criticalRate,damageIncrease ,defendMinus ,resistanceMinus , zengFuMuti)
+          console.log(sequence.timing, damageBase, criticalRate,damageIncrease ,defendMinus ,resistanceMinus , zengFuMuti)
         }
 
         let damageTypeName = '物理';
@@ -105,7 +104,7 @@ export const damageCount = function(note){
           damageTypeName = _elementType + '元素';
         }
 
-        const damage = Math.round(damageBase * muti * criticalRate * damageIncrease * defendMinus * resistanceMinus * zengFuMuti);
+        const damage = Math.round(damageBase * criticalRate * damageIncrease * defendMinus * resistanceMinus * zengFuMuti);
         noteList.push({
           type: 'message',
           message: `第${sequence.timing/10}秒，${roll2Zh[sequence.from].name}使用${sequence.actionName}，造成${damage}${reactionName}${isCritical}点${damageTypeName}伤害。`,
@@ -123,14 +122,20 @@ export const damageCount = function(note){
   return noteList;
 };
 
-//攻击乘区
+//基础乘区 攻击x倍率+额外
 //攻击基数, 攻击比例 (胡桃2命雪梅香双重组合/申鹤冰凌加成)
 const attackArea = (attr) => {
   let damageBase = 0;
   attr.damageBase.forEach(res => {
     //       attr.attack or attr.life
-
-    damageBase += attr[res.base] * res.rate;
+    let innerDamage = 0;
+    if(res?.main){
+      //attr.damageMultiple  倍率乘区
+      innerDamage = attr[res.base] * res.rate * attr.damageMultiple
+    }else{
+      innerDamage = attr[res.base] * res.rate;
+    }
+    damageBase += innerDamage;
   });
 
   if(attr.from === 'aBeiDuo'){
@@ -140,11 +145,6 @@ const attackArea = (attr) => {
   const addOn = assignAddOns('attackArea', attr);
 
   return damageBase + addOn;
-};
-
-//倍率乘区
-const mutiArea = (attr) => {
-  return attr.damageMultiple;
 };
 
 //双暴乘区

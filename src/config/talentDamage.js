@@ -175,6 +175,22 @@ export default {
       {base: 1.6, gongMing: .64},
       {base: 1.7, gongMing: .68},
     ],
+    q: [
+      {base: 4.01},
+      {base: 4.44},
+      {base: 4.88},
+      {base: 5.42},
+      {base: 5.91},
+      {base: 6.4},
+      {base: 7.05},
+      {base: 7.7},
+      {base: 8.35},
+      {base: 9},
+      {base: 9.65},
+      {base: 10.30},
+      {base: 10.84},
+      {base: 11.38},
+    ],
   },
   aBeiDuo: {
     e: [

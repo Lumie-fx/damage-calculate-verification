@@ -82,7 +82,7 @@ const insert = [{
     stars: 2,
   },
   level: 90,
-  stars: 0,
+  stars: 2,
   skill: [9,9,10],
   wear: [{name: 'jueDouShi', num: 2},{name: 'qianYan', num: 2}],
   relics: {
@@ -365,8 +365,45 @@ export default {
         this[res] = _.find(this.team, {name: res});
       })
 
+
+      this.doubleGeoResonateFlag = false;//是否开启双岩共鸣开关
+      this.shieldArr = [];            //护盾{type:'火',name: 'zhongLi_E',time:100},..
+
+      this.teamRefine = (type, name, refine) => {
+        let selectRoles = null;
+        if(type === 'all'){//全队
+          selectRoles = this.team;
+        }
+        if(type === 'others'){//队友
+          selectRoles = this.team.filter(res=>res.name !== name);
+        }
+        if(type === 'front'){//前台
+          selectRoles = this.team.filter(res=>res.front === true);
+        }
+        if(type === 'back'){//后台
+          selectRoles = this.team.filter(res=>res.front !== true);
+        }
+        if(selectRoles){
+          selectRoles.forEach(res => {
+            res[refine.name + 'Refine'] = refine.value;
+          })
+        }
+      }
+
+      //组队buff
       if(this.team.length === 4){
-        //todo 组队buff
+        //双岩共鸣
+        if(insert.filter(teamMember => teamMember.element === '岩').length >= 2){
+          this.doubleGeoResonateFlag = true;
+        }
+        //双火共鸣
+        if(insert.filter(teamMember => teamMember.element === '火').length >= 2){
+          this.teamRefine('all', 'team_2_pyro_attack_25%', {
+            name: 'attack',
+            value: {name: 'team_2_pyro_attack_25%', value: .25, type: 'percent'}
+          });
+        }
+        //todo 双水共鸣
       }
 
       this.teamSwitchEndFuncArr = [];
@@ -435,10 +472,33 @@ export default {
       this.geoItems = 0;           //当前岩造物数量
       this.beResonatedItems = 0;   //被共鸣物体数量
 
-      this.shield = [];            //护盾{type:'火',time:100},..
-
       //记录怪物减益buff todo 测试
       const teamDefined = {
+        shieldRefine: {    //{type:'火',name: 'zhongLi_E',time:100}
+          set: obj => {
+            const arr = this.shieldArr;
+            if(_.find(arr, {name: obj.name})){
+              const idx = _.findIndex(arr, {name: obj.name});
+              arr[idx].time = obj.time;
+            }else{
+              arr.push(obj);
+              if(arr.length === 1){
+                //开始有护盾事件
+                if(this.doubleGeoResonateFlag){
+                  this.resistanceMitigationRefine = {
+                    name: 'team_2_geo_with_shield_resistance',
+                    value: [0,0,0,0,0,.2,0,0],
+                    type: 'number',
+                  };
+                  this.teamRefine('all', 'team_2_geo_with_shield_increase', {
+                    name: 'elementCharge',
+                    value: {name: 'team_2_geo_with_shield_increase', value: new Array(8).fill(.15), type: 'number'}
+                  });
+                }
+              }
+            }
+          }
+        },
         resistanceMitigationRefine: {
           set: obj => { //obj: {name: '', value: 5.8, type: 'percent/number'}
             const arr = this.resistanceMitigationArr;
@@ -477,28 +537,6 @@ export default {
 
       Object.defineProperties(this, {...teamDefined});
 
-
-      this.teamRefine = (type, name, refine) => {
-        let selectRoles = null;
-        if(type === 'all'){//全队
-          selectRoles = this.team;
-        }
-        if(type === 'others'){//队友
-          selectRoles = this.team.filter(res=>res.name !== name);
-        }
-        if(type === 'front'){//前台
-          selectRoles = this.team.filter(res=>res.front === true);
-        }
-        if(type === 'back'){//后台
-          selectRoles = this.team.filter(res=>res.front !== true);
-        }
-        if(selectRoles){
-          selectRoles.forEach(res => {
-            res[refine.name + 'Refine'] = refine.value;
-          })
-        }
-      }
-
       this.note = [];
 
     }
@@ -519,7 +557,7 @@ export default {
     let _actions = [];
 
     //todo 可选
-    const chain = 'aBeiDuo:e|zhongLi:el|yeLan:q-a-e2|huTao:e-az10-q';
+    const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az10-q';
 
     const rollChainArr = chain.split('|');
 
@@ -696,6 +734,34 @@ export default {
 
 
       log(i, JSON.parse(JSON.stringify(teamPack?.aBeiDuo.refineAttr.increaseAddOn)))
+
+
+      const delShieldIdx = [];
+      teamPack.shieldArr.forEach((shield, s_idx) => {
+        if(shield?.time){
+          shield.time --;
+          if(shield.time <= 0){
+            delShieldIdx.push(s_idx);
+          }
+        }
+      });
+      if(delShieldIdx.length > 0){
+        delShieldIdx.reverse().forEach(d_idx => {
+          teamPack.shieldArr.splice(d_idx, 1);
+        });
+        if(teamPack.shieldArr.length === 0){
+          //全部护盾都消失事件
+          teamPack.resistanceMitigationRefine = {
+            name: 'team_2_geo_with_shield_resistance',
+            value: new Array(8).fill(0),
+            type: 'number',
+          };
+          teamPack.teamRefine('all', 'team_2_geo_with_shield_increase', {
+            name: 'elementCharge',
+            value: {name: 'team_2_geo_with_shield_increase', value: new Array(8).fill(0), type: 'number'}
+          });
+        }
+      }
 
 
       packActions.forEach(packAction => {

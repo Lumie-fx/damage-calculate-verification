@@ -53,7 +53,7 @@ export function huTao(level, stars, skills=[1,1,1]){
   //0命:手法aaaz跳
   //1命:手法解锁e + 10az闪/8aaz闪 + q
   //2命:雪梅香伤害增加生命的10% --ok 计算注意
-  const damageBase = [{base: 'attack', rate: 1, from: name}];
+  const damageBase = [{base: 'attack', rate: 1, from: name, main: true}];
   if(stars >= 2){
     damageBase.push({base: 'life', rate: .1, from: name});
   }
@@ -132,7 +132,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceA,
         damageMultiple: talentDamage.huTao.a1[skills[0]-1].base,
         damageType: 'A',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'A1'+name,
@@ -144,7 +144,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceZ,
         damageMultiple: talentDamage.huTao.z[skills[0]-1].base,
         damageType: 'Z',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'B',
@@ -183,7 +183,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceA1,
         damageMultiple: talentDamage.huTao.a1[skills[0]-1].base,
         damageType: 'A',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'A1'+name,
@@ -195,7 +195,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceA2,
         damageMultiple: talentDamage.huTao.a2[skills[0]-1].base,
         damageType: 'A',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'A1'+name,
@@ -207,7 +207,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceZ,
         damageMultiple: talentDamage.huTao.z[skills[0]-1].base,
         damageType: 'Z',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'B',
@@ -246,7 +246,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceA1,
         damageMultiple: talentDamage.huTao.a1[skills[0]-1].base,
         damageType: 'A',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'A1'+name,
@@ -258,7 +258,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceA2,
         damageMultiple: talentDamage.huTao.a2[skills[0]-1].base,
         damageType: 'A',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'A1'+name,
@@ -270,7 +270,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceA3,
         damageMultiple: talentDamage.huTao.a3[skills[0]-1].base,
         damageType: 'A',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'A1'+name,
@@ -282,7 +282,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: attr.sequenceZ,
         damageMultiple: talentDamage.huTao.z[skills[0]-1].base,
         damageType: 'Z',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'B',
@@ -394,7 +394,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         sequence: 10,        //todo
         damageMultiple: talentDamage.huTao.q[skills[0]-1].base,
         damageType: 'Q',
-        damageBase: [{base: 'attack', rate: 1, from: name}],
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         attach: {
           element: [0,1,0,0,0,0,0,0],
           type: 'B',
@@ -414,7 +414,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         type: '单次',
         sequence: (lastIdx) => {
           if(!effect[0].lockedAttr){
-            effect[0].lockedAttr = JSON.parse(JSON.stringify(this.super[name].refineAttr));
+            effect[0].lockedAttr = _.cloneDeep(this.super[name].refineAttr);
           }
           return effect.filter(res => lastIdx - start === res.sequence)
         },
