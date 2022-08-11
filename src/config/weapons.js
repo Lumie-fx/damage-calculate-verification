@@ -72,6 +72,38 @@ export default {
     }
   },
 
+  hePuYuan(level, stars){//lv90  1,2,3,4,5
+
+    const wn = 'hePuYuan';
+
+    const attr = {
+      basic: {//基础属性 白字
+        attack: 674
+      },
+      //todo 伤害叠层
+      others: {//其他属性, 二次相加
+        critical: .221,
+        attack: [.224,.273,.322,.371,.42][stars-1],
+        elementCharge: [
+          new Array(8).fill(.12),
+          new Array(8).fill(.15),
+          new Array(8).fill(.18),
+          new Array(8).fill(.21),
+          new Array(8).fill(.24)
+        ][stars-1],
+      },
+    };
+
+    return {
+      ...attr,
+      refine(){
+        this.criticalRefine = {name: 'critical_'+wn, value: attr.others.critical, type: 'number'};
+        this.attackRefine = {name: 'attack_'+wn, value: attr.others.attack, type: 'percent'};
+        this.elementChargeRefine = {name: 'elementCharge_'+wn, value: attr.others.elementCharge, type: 'number'};
+      }
+    }
+  },
+
 
 
 

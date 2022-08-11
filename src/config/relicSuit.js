@@ -79,9 +79,17 @@ export default {
       };
     }
   },
+  //角斗士
   jueDouShi(num){
     if(num >= 2){
       this.attackRefine = {name: 'relic_jueDouShi_2', value: .18, type: 'percent'};
+    }
+    //todo 4
+  },
+  //翠绿之影
+  cuiLv(num){
+    if(num >= 2){
+      this.elementChargeRefine = {name: 'relic_cuiLv_2', value: [0,0,0,0,.15,0,0,0], type: 'number'};
     }
     //todo 4
   },

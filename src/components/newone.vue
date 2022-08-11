@@ -24,29 +24,29 @@ import utils from "../config/utils";
 //数据 todo 接入miao-plugin查询插件数据 - enka
 
 const insert = [{
-  name: 'huTao',
-  element: '火',
+  name: 'xiao',
+  element: '风',
   weapon: {
-    name: 'huMoZhiZhang',
+    name: 'hePuYuan',
     level: 90,
-    stars: 5,
+    stars: 3,
   },
   level: 90,
-  stars: 6,
-  skill: [10,13,13],
-  wear: [{name: 'moNv', num: 4}],
+  stars: 0,
+  skill: [10,8,8],
+  wear: [{name: 'jueDouShi', num: 3}, {name:'cuiLv', num: 2}],
   relics: {
-    life: 5766,
-    lifePercent: .327,
-    attack: 311,
-    attackPercent: .116,
-    defend: 37,
+    life: 4989,
+    lifePercent: .222,
+    attack: 360,
+    attackPercent: .781,
+    defend: 32,
     defendPercent: 0,
-    critical: .7,
-    criticalDamage: .731,
-    energyCharge: .058,
-    elementMaster: 261,
-    elementCharge: [0,.466,0,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+    critical: .264,
+    criticalDamage: 1.267,
+    energyCharge: .201,
+    elementMaster: 82,
+    elementCharge: [0,0,0,0,.466,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 },{
   name: 'yeLan',
@@ -557,7 +557,8 @@ export default {
     let _actions = [];
 
     //todo 可选
-    const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az10-q';
+    // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az10-q';
+    const chain = 'xiao:e2-q-d11';
 
     const rollChainArr = chain.split('|');
 
@@ -733,7 +734,7 @@ export default {
       });
 
 
-      log(i, JSON.parse(JSON.stringify(teamPack?.aBeiDuo.refineAttr.increaseAddOn)))
+      log(i, JSON.parse(JSON.stringify(teamPack?.xiao.refineAttr)))
 
 
       const delShieldIdx = [];

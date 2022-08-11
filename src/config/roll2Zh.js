@@ -40,5 +40,11 @@ export default {
     action: {
 
     }
+  },
+  xiao: {
+    name: '魈',
+    action: {
+
+    }
   }
 }
