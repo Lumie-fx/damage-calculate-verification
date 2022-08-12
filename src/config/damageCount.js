@@ -94,9 +94,9 @@ export const damageCount = function(note){
           reactionName = `(${type})`;
         }
 
-        if(sequence.from === 'aBeiDuo'){
-          console.log(sequence.timing, damageBase, criticalRate,damageIncrease ,defendMinus ,resistanceMinus , zengFuMuti)
-        }
+        // if(sequence.from === 'xiao'){
+        //   console.log(sequence.timing, damageBase, criticalRate,damageIncrease ,defendMinus ,resistanceMinus , zengFuMuti)
+        // }
 
         let damageTypeName = '物理';
         const _elementType = elementNameList[attr.elementType.indexOf(1)];
@@ -138,9 +138,9 @@ const attackArea = (attr) => {
     damageBase += innerDamage;
   });
 
-  if(attr.from === 'aBeiDuo'){
-    console.log('==========', JSON.parse(JSON.stringify(attr)))
-  }
+  // if(attr.from === 'aBeiDuo'){
+  //   console.log('==========', JSON.parse(JSON.stringify(attr)))
+  // }
 
   const addOn = assignAddOns('attackArea', attr);
 
@@ -164,8 +164,9 @@ const increaseArea = (attr) => {
   const elementIndex = elementType.indexOf(1);
 
   const addOn = assignAddOns('elementCharge', attr);
-
-  return attr.elementCharge[elementIndex] + addOn; //增伤比
+  const finalIncrease = attr.elementCharge[elementIndex] + addOn;
+  // log(attr.elementCharge[elementIndex], addOn)
+  return finalIncrease; //增伤比
 };
 
 //怪物防御乘区 输出承伤比率 .5x
@@ -277,13 +278,14 @@ const assignAddOns = (type, attr) => {
 
     if(flag){
       if(type === 'attackArea'){
-        console.log('==========================',attr[now.effect.effectValue.base],now.effect.effectValue.rate)
+        // console.log('==========================',attr[now.effect.effectValue.base],now.effect.effectValue.rate)
         return attr[now.effect.effectValue.base] * now.effect.effectValue.rate
       }else{
-        return now.effect.effectValue;
+        // console.log('==========================',now.effect.effectValue)
+        return sum + now.effect.effectValue;
       }
     }else{
-      return 0;
+      return sum;
     }
   }, 0);
 

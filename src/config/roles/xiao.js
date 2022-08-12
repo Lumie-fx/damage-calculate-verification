@@ -28,13 +28,65 @@ export function xiao(level, stars, skills=[1,1,1]){
   let isTalent2 = false;
   //天赋2aeq 附加生命的增伤
   const talent = function(){
+
+    const that = this;
+
     //天赋1 q后5% 3s+5% max25% q结束清除效果
     if(level >= 20){
       isTalent1 = true;
     }
-    //todo e后7s e+15% max3次45%
+    //e后7s e+15% max3次45%
     if(level >= 70){
+      isTalent2 = true;
+      this.eventTrigger.push({
+        type: '1',
+        name: 'xiao_talent2_skillE_charge',
+        bindAction: 'E',
+        reward(){
 
+          log('xiao_talent2_skillE_charge'+'| reward'+'|' + this.now);
+          log(_.cloneDeep(that.refineAttr.increaseAddOn))
+
+          if(this.now < this.max){
+            this.now ++;
+          }else{
+            this.now = this.max;
+          }
+          that.increaseAddOnRefine = {
+            name: 'xiao_talent2_skillE_charge_15%',
+            effect: {
+              effectAction: [0,0,0,1,0],
+              effectWeaponType: [1,1,1,1,1],
+              effectArea: 'elementCharge',
+              effectElement: [1,1,1,1,1,1,1,1],
+              attachedBy: [0,0,0,0,0,0,0,0],
+              effectValue: .15 * this.now
+            },
+            timeCount: 10000
+          };
+          this.duration = 70;//刷新持续时间
+        },
+        now: 0,
+        max: 3,
+        duration: 70,
+        durationEnd(){
+
+          log('xiao_talent2_skillE_charge'+'| durationEnd'+'|' + this.now);
+          this.now = 0;
+          that.increaseAddOnRefine = {
+            name: 'xiao_talent2_skillE_charge_15%',
+            effect: {
+              effectAction: [0,0,0,1,0],
+              effectWeaponType: [1,1,1,1,1],
+              effectArea: 'elementCharge',
+              effectElement: [1,1,1,1,1,1,1,1],
+              attachedBy: [0,0,0,0,0,0,0,0],
+              effectValue: 0
+            },
+            timeCount: 10000
+          };
+        }
+      });
     }
   };
 
@@ -101,10 +153,6 @@ export function xiao(level, stars, skills=[1,1,1]){
         last: 4,
         sequence: 1, //todo
       };
-      //叠层
-      // this.eventTrigger.filter(res => res.bindAction === 'E').forEach(res => {
-      //   res.reward();
-      // });
 
       const effect = [{
         from: name,
@@ -129,6 +177,14 @@ export function xiao(level, stars, skills=[1,1,1]){
         },
         type: '单次',
         sequence: (lastIdx) => {
+          //                                   + 1 (e之后触发)
+          if(lastIdx - start === attr.sequence + 1 && isTalent2){
+            log(that.eventTrigger.length)
+            that.eventTrigger.filter(res => res.bindAction === 'E' && res.name === 'xiao_talent2_skillE_charge').forEach(res => {
+              res.reward();
+            });
+
+          }
           return effect.filter(res => lastIdx - start === res.sequence)
         },
       }]

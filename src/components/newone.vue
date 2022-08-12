@@ -42,7 +42,7 @@ const insert = [{
     attackPercent: .781,
     defend: 32,
     defendPercent: 0,
-    critical: .264,
+    critical: .664,//264 todo
     criticalDamage: 1.267,
     energyCharge: .201,
     elementMaster: 82,
@@ -558,7 +558,7 @@ export default {
 
     //todo 可选
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az10-q';
-    const chain = 'xiao:e2-q-d11';
+    const chain = 'xiao:e6-q-d11-e6';
 
     const rollChainArr = chain.split('|');
 
@@ -709,9 +709,12 @@ export default {
           if(timingEvent.type === '1'){
             //todo duration = number or array 分别叠层的情况:冬极白星
             if(timingEvent?.duration > 0){
+              log('<<<<<<<<<<<<<<<<<<<')
+              log(i, timingEvent?.duration)
               timingEvent.duration --;
             }
             if(timingEvent?.duration === 0){
+              timingEvent.duration = -1;//避免===0重复触发
               timingEvent.durationEnd();
             }
           }
@@ -734,7 +737,7 @@ export default {
       });
 
 
-      log(i, JSON.parse(JSON.stringify(teamPack?.xiao.refineAttr)))
+      // log(i, JSON.parse(JSON.stringify(teamPack?.xiao.refineAttr)))
 
 
       const delShieldIdx = [];

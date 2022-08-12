@@ -419,8 +419,8 @@ function packDamageItem(item, reaction){
   const {type, rate} = reaction || {};
   const name = item.sequence.from;
 
-  log('==================')
-  log(JSON.parse(JSON.stringify(this[name].refineAttr.increaseAddOn)))
+  // log('==================')
+  // log(JSON.parse(JSON.stringify(this[name].refineAttr.increaseAddOn)))
 
   return {
     from: name,

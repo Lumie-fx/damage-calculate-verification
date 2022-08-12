@@ -27,12 +27,11 @@ export default {
         name: 'relic_moNv4_elementCharge',
         bindAction: 'E',
         reward(){
-          if(this.now <= this.max){
+          if(this.now < this.max){
             this.now ++;
           }else{
             this.now = this.max;
           }
-          log(this.now)
           that.elementChargeRefine = {
             name: 'relic_moNv4_elementCharge',
             value: [0,.075*this.now,0,0,0,0,0,0],
