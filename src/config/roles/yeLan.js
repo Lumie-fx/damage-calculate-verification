@@ -15,10 +15,9 @@ export function yeLan(level, stars, skills=[1,1,1]){
     critical: .242,
     criticalDamage: 1.5,
     energyCharge: 1,
-    elementType: [1,0,0,0,0,0,0,1],//水, 物理
+    elementType: [1,0,0,0,0,0,0,0],//水, 物理
     elementMaster: 0,
     elementCharge: [1,1,1,1,1,1,1,1],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
-    otherCharge: [] //英文直接命名 AYAKA_ATTACK20
   };
 
   //todo

@@ -4,6 +4,7 @@ const log = console.log;
 
 export default {
 
+  //护摩之杖
   huMoZhiZhang(level, stars){//lv90  1,2,3,4,5
 
     const wn = 'huMoZhiZhang';
@@ -41,6 +42,7 @@ export default {
     }
   },
 
+  //若水
   ruoShui(level, stars){//lv90  1,2,3,4,5
 
     const wn = 'ruoShui';
@@ -72,6 +74,7 @@ export default {
     }
   },
 
+  //和璞鸢
   hePuYuan(level, stars){//lv90  1,2,3,4,5
 
     const wn = 'hePuYuan';
@@ -100,6 +103,44 @@ export default {
         this.criticalRefine = {name: 'critical_'+wn, value: attr.others.critical, type: 'number'};
         this.attackRefine = {name: 'attack_'+wn, value: attr.others.attack, type: 'percent'};
         this.elementChargeRefine = {name: 'elementCharge_'+wn, value: attr.others.elementCharge, type: 'number'};
+      }
+    }
+  },
+
+  //雾切之回光
+  wuQieZhiHuiGuang(level, stars){//lv90  1,2,3,4,5
+
+    const wn = 'wuQieZhiHuiGuang';
+
+    const attr = {
+      basic: {//基础属性 白字
+        attack: 674
+      },
+      others: {//其他属性, 二次相加
+        criticalDamage: .441,
+        elementCharge: [
+          new Array(8).fill(.12),
+          new Array(8).fill(.15),
+          new Array(8).fill(.18),
+          new Array(8).fill(.21),
+          new Array(8).fill(.24)
+        ][stars-1],
+      },
+    };
+
+    //todo 叠层 1.a触发元素伤害/10s 2.释放q/10s 3.能量不足100%
+    const getCharge = (num) => {//num=1,2,3
+      return [[.08,.16,.28],[.1,.2,.35],[.12,.24,.42],[.14,.28,.49],[.16,.32,.56],][stars][num-1];
+    };
+
+    return {
+      ...attr,
+      refine(){
+        this.criticalDamageRefine = {name: 'criticalDamage_'+wn, value: attr.others.criticalDamage, type: 'number'};
+        this.elementChargeRefine = {name: 'elementCharge_'+wn, value: attr.others.elementCharge, type: 'number'};
+
+
+        log(this.attr.elementType)
       }
     }
   },

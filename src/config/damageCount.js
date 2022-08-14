@@ -38,7 +38,9 @@ export const damageCount = function(note){
         monsterMinusDefendOnly: 0,
         monsterBaseResistance: (8) [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
         monsterMinusResistance: (8) [0, 0, 0, 0, 0, 0, 0, 0],
-        increaseAddOn: []
+        increaseAddOn: [],
+        elementPool: [],
+        elementReactionItemsArr: []
       },
       timing: 16,
       message: "第/time/秒，胡桃使用安神秘法(面板锁定)，造成/damage/点伤害。", --感觉不需要
@@ -68,6 +70,8 @@ export const damageCount = function(note){
       // if(sequence.from === 'aBeiDuo' && sequence.timing === 39){
       //   log(sequence.timing, JSON.parse(JSON.stringify(attr)))
       // }
+
+      // log(sequence.timing)
 
       const damageBase = attackArea(attr);
       const {critical,criticalRate} = criticalArea(attr);
@@ -150,7 +154,11 @@ const attackArea = (attr) => {
 //双暴乘区
 //特殊暴击计算 (如鱼叉对大招暴击, 小鹿6命e暴击) -- resolve assignAddOns
 const criticalArea = (attr) => {
-  const criticalFlag = Math.random() <= attr.critical;
+  const critical = attr.critical + assignAddOns('critical', attr);
+
+  // log(critical)
+
+  const criticalFlag = Math.random() <= critical;
   return {
     critical: criticalFlag,   //true 暴击
     criticalRate: criticalFlag ? attr.criticalDamage : 1,//伤害比
@@ -162,11 +170,10 @@ const criticalArea = (attr) => {
 const increaseArea = (attr) => {
   const elementType = attr.elementType;
   const elementIndex = elementType.indexOf(1);
-
+  //独立系数
   const addOn = assignAddOns('elementCharge', attr);
-  const finalIncrease = attr.elementCharge[elementIndex] + addOn;
   // log(attr.elementCharge[elementIndex], addOn)
-  return finalIncrease; //增伤比
+  return attr.elementCharge[elementIndex] + addOn; //增伤比
 };
 
 //怪物防御乘区 输出承伤比率 .5x
@@ -250,7 +257,7 @@ const chargeArea = (attr) => {
 const weaponNameList = ['剑','大剑','枪','弓','书'];
 const actionNameList = ['A','Z','D','E','Q'];// ...还有其他
 
-//细碎增益 todo 暂时只测试绝缘4 -增伤类
+//细碎增益
 const assignAddOns = (type, attr) => {
   if(!attr.increaseAddOn) {
     return 0;
@@ -263,18 +270,66 @@ const assignAddOns = (type, attr) => {
     // now.effect.effectWeaponType
     let flag = true;
     //武器不匹配
-    if(now.effect.effectWeaponType[weaponNameList.indexOf(attr.weaponType)]===0){
+    if(now.effect.effectWeaponType[weaponNameList.indexOf(attr.weaponType)] === 0){
       flag = false;
     }
     //动作不匹配
-    if(now.effect.effectAction[actionNameList.indexOf(attr.damageType)]===0){
+    if(now.effect.effectAction[actionNameList.indexOf(attr.damageType)] === 0){
       flag = false;
     }
     //元素不匹配
     if(now.effect.effectElement[attr.elementType.indexOf(1)] === 0){
       flag = false;
     }
-    //todo 附着不匹配 - 匣里灭辰等
+
+    //附着不匹配 - 匣里灭辰/冰套 等
+    if(now.effect.attachedBy.includes(1)){
+      //当前池子里所有存在的元素 [1,0,1,0,0,0,0,0]=>水冰共存
+      let nowElementPool = (attr?.elementPool || []).reduce((_sum, _now) => {
+        _sum[_now.sequence.attach.element.indexOf(1)] = 1;
+        return _sum;
+      }, new Array(9).fill(0));
+
+      //冻结判断
+      if(_.find(attr.elementReactionItemsArr, {name: 'element_reaction_freeze'})?.amount > 0){
+        nowElementPool[8] = 1;
+      }else{
+        nowElementPool[8] = 0;
+      }
+      // log(_.cloneDeep(nowElementPool))
+
+      //需要的附着元素 [0,0,1,0,0,0,0,0]
+      const attachBy = now.effect.attachedBy;
+      //需全满足的条件 => 冰4额外20/双冰共鸣 等 - todo 待测试
+      if(now.effect.attachedType === 'and'){
+        let andFlag = true;
+        attachBy.forEach((res, idx) => {
+          if(res === 1 && nowElementPool[idx] !== 1){
+            andFlag = false;
+          }
+        });
+        if(!andFlag){
+          flag = false;
+        }
+      }
+      //需部分满足的条件 => 冰4基础20 等
+      if(!now.effect.attachedType || now.effect.attachedType === 'or'){
+        let orFlag = false;
+        attachBy.forEach((res, idx) => {
+          if(res === 1 && nowElementPool[idx] === 1){
+            orFlag = true;
+          }
+        });
+        if(!orFlag){
+          flag = false;
+        }
+      }
+      // log(nowElementPool)
+      // log(now.effect.attachedBy)
+      // log(now.effect.attachedType) //and or
+      //{sequence.attach.element:[]}
+    }
+
 
     if(flag){
       if(type === 'attackArea'){
@@ -288,6 +343,11 @@ const assignAddOns = (type, attr) => {
       return sum;
     }
   }, 0);
+
+  // if(type === 'critical' && attr.from === 'shenLiLingHua'){
+  //   log(increase)
+  // }
+
 
   return increase;
 };

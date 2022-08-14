@@ -1,9 +1,18 @@
 import _ from 'lodash'
+import talentDamage from "./talentDamage";
 const log = console.log;
 
 export default {
 
-  //todo 排序
+  /**
+   * moNv 魔女套
+   * jueYuan 绝缘套
+   * jueDouShi 角斗士
+   * cuiLv 翠绿/风套
+   * qianYan 千岩套
+   * huaGuan 华馆套
+   * bingFeng 冰套
+   */
 
   moNv(num){// 2 4
     if(num >= 2){
@@ -105,6 +114,41 @@ export default {
     if(num >= 4){
       this.defendRefine = {name: 'relic_huaGuan_4_defend', value: .24, type: 'percent'};
       this.elementChargeRefine = {name: 'relic_huaGuan_4_element', value: [0,0,0,0,0,.24,0,0], type: 'number'};
+    }
+  },
+  //冰套
+  bingFeng(num){
+    if(num >= 2){
+      this.elementChargeRefine = {name: 'relic_bingFeng_2', value: [0,0,.15,0,0,0,0,0], type: 'number'};
+    }
+    if(num >= 4){
+      //加成
+      this.increaseAddOnRefine = {
+        name: 'relic_bingFeng_4_ice_20',
+        effect: {
+          effectAction: [1,1,1,1,1],
+          effectWeaponType: [1,1,1,1,1],
+          effectArea: 'critical',
+          effectElement: [1,1,1,1,1,1,1,1],
+          attachedBy: [0,0,1,0,0,0,0,0,1],//9:冻结
+          effectValue: .2,
+        },
+        timeCount: 10000
+      };
+      //加成
+      this.increaseAddOnRefine = {
+        name: 'relic_bingFeng_4_ice_water_20',
+        effect: {
+          effectAction: [1,1,1,1,1],
+          effectWeaponType: [1,1,1,1,1],
+          effectArea: 'critical',
+          effectElement: [1,1,1,1,1,1,1,1],
+          attachedBy: [0,0,0,0,0,0,0,0,1], //9:冻结
+          attachedType: 'and', // and  or
+          effectValue: .2,
+        },
+        timeCount: 10000
+      };
     }
   }
 }

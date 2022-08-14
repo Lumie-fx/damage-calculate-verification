@@ -15,10 +15,9 @@ export function zhongLi(level, stars, skills=[1,1,1]){
     critical: .05,
     criticalDamage: 1.5,
     energyCharge: 1,
-    elementType: [0,0,0,0,0,1,0,1],//岩, 物理
+    elementType: [0,0,0,0,0,1,0,0],//岩, 物理
     elementMaster: 0,
     elementCharge: [1,1,1,1,1,1.288,1,1],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
-    otherCharge: [] //英文直接命名 AYAKA_ATTACK20
   };
 
   //1命2个e todo 共鸣流  - 多个岩脊/岩创造物

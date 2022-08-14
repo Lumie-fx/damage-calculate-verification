@@ -2,30 +2,12 @@ export default {
   yeLan: {
     name: '夜兰',
     action: {
-      a: {
-
-      },
-      e: {
-
-      },
-      q: {
-
-      }
     }
   },
 
   huTao: {
     name: '胡桃',
     action: {
-      a: {
-
-      },
-      e: {
-
-      },
-      q: {
-
-      }
     }
   },
 
@@ -43,6 +25,12 @@ export default {
   },
   xiao: {
     name: '魈',
+    action: {
+
+    }
+  },
+  shenLiLingHua: {
+    name: '神里绫华',
     action: {
 
     }

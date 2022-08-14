@@ -23,14 +23,32 @@ export const chargeElementSequence = function(idx, sequenceArr){
     const elementName1 = getElementZhName(elementType1);
     const elementType2 = elementPool[1].sequence.attach.element;
     const elementName2 = getElementZhName(elementType2);
+
     log(elementPool[0].endTime, elementPool[0].amount, elementPool[1].endTime, elementPool[1].amount, idx)
+
     if(elementName1 === '水' && elementName2 === '雷' || elementName1 === '雷' && elementName2 === '水'){
       if(elementPool[0].endTime === idx){
-        reaction2Element(elementPool, idx);
+        reaction2Element.bind(this)(elementPool, idx);
+
+        // const {type,rate,isReaction,amount0} = reaction2Element(elementPool, idx);
+        // log('||||||||||||||'+type)
+        // if(['感电'].includes(type||'')){
+        //   // this.note.push({
+        //   //   from: item.sequence.from,
+        //   //   timing: idx,
+        //   //   type: 'reaction',
+        //   //   actionName: item.sequence.name,
+        //   //   // amount0,
+        //   //   lockedAttr,
+        //   //   message,
+        //   //   multiplicationArea: packDamageItem.bind(this)(item, {}),
+        //   // });
+        // }
       }
     }
   }
 
+  //元素附着结束
   const deleteElementIndex = [];
   elementPool.map((res, idx) => {
     res.amount -= res.decrease;
@@ -59,12 +77,36 @@ export const chargeElementSequence = function(idx, sequenceArr){
 
       // log('动作',sequence.damageType, idx, this.attackBindFlag, this.attackBindTime)
 
-      //todo -- 被动触发晚了.1s 没有及时生效
+      //附魔处理
+      const attackAttachArr = _.cloneDeep(this.attackAttachArr);
+      /*
+        {
+          name: 'shenLi_spurt_5s_ice_attackAttach',
+          role: 'shenLiLingHua',
+          type: 'person',//person / all
+          element: [0,0,1,0,0,0,0,0],
+          time: 50,
+        }
+      */
+      if(['A','Z','D'].includes(sequence.damageType) &&
+        ['剑','大剑','枪'].includes(this[sequence.from].weaponType) &&
+        attackAttachArr.length > 0){
+
+        //todo 元素的相互覆盖处理 - 班尼特/重云 等
+        //暂时先处理绫华的e附魔
+        attackAttachArr.forEach(res => {
+          if(res.type === 'person' && res.role === sequence.from){
+            sequence.attach.element = res.element;
+          }
+        });
+      }
+
+
       this.team.forEach(role => {
         role.eventTrigger.forEach(timingEvent => {
           //
           if(timingEvent.type === '2'){
-            //使用的与伤害类型一致
+            //使用的与伤害类型一致                                  生效中             同一个人 这里的from包括队里所有人===这个是当前要触发的人
             if(sequence.damageType === timingEvent.bindAction && timingEvent.open && sequence.from === timingEvent.from){
               log(idx, '阿贝多触发剑被动',timingEvent.bindAction,sequence.from)
               timingEvent.reward();
@@ -284,8 +326,6 @@ const element2Name = ['水','火','冰','雷','风','岩','草','物'];
 const getElementZhName = (elementArr) => {
   return element2Name[elementArr.indexOf(1)];
 };
-//伤害池
-const damagePool = [];
 
 /*
   elementPool: [{}]
@@ -324,7 +364,7 @@ function attach(item, idx){
   // log('attach', elementName, item.sequence.name)
 
   // const _element = elementPool.map(res=>res.amount).join(',');
-  // log(_element)
+  // log(idx, _.cloneDeep(elementPool))
 
   //锁面板属性存在
   const lockedAttr = item.sequence?.lockedAttr || null;
@@ -332,11 +372,9 @@ function attach(item, idx){
 
   if(elementPool.length === 1){
 
-    //todo
-    if(item.sequence.from === 'aBeiDuo'){
-      log(idx,'abd doing1')
-    }
-
+    // if(item.sequence.from === 'aBeiDuo'){
+    //   log(idx,'abd doing1')
+    // }
 
     this.note.push({
       from: item.sequence.from,
@@ -351,15 +389,21 @@ function attach(item, idx){
 
   if(elementPool.length === 2){
     //融化/蒸发/.. 1.5/2  true/false(2种同属性元素)
-    const {type,rate,isReaction,amount0} = reaction2Element(elementPool, idx);
-
-    //todo
-    if(item.sequence.from === 'aBeiDuo'){
-      log(idx,'abd doing2')
-    }
-
+    const {type,rate,isReaction,amount0} = reaction2Element.bind(this)(elementPool, idx);
 
     if(isReaction){
+      if(['感电','扩散','超导','冻结'].includes(type||'')){
+        this.note.push({
+          from: item.sequence.from,
+          timing: idx,
+          type: 'reaction',
+          actionName: item.sequence.name,
+          // amount0,
+          lockedAttr,
+          message,
+          multiplicationArea: packDamageItem.bind(this)(item, {}),
+        });
+      }
       this.note.push({
         from: item.sequence.from,
         timing: idx,
@@ -387,9 +431,26 @@ function attach(item, idx){
   //todo
   if(elementPool.length === 3){
     //水雷+水/雷 补充  --弱风双扩
-    //水冰+水/冰 补充  --风扩散时, 冰水成冻,过量水风优先扩水,过量风继续扩冰
+    //水冰+水/冰 补充  --风扩散时, 冰水成冻,优先扩藏元素,过量水风优先扩水,过量风继续扩冰
     //...
-    log(3, idx)
+    log(3, idx, _.cloneDeep(elementPool))
+    //{amount: 1.0536999999999992, decrease: 0.0133, sequence: {…}, endTime: 58}
+      /*
+      sequence:
+        attach: {
+          element: (8) [1, 0, 0, 0, 0, 0, 0, 0]
+          time: 120
+          type: "A_q_yelan"
+        }
+        damageBase: [{base: 'life', rate: 1, from: 'yeLan', main: true}]
+        damageMultiple: 0.1398
+        damageType: "Q"
+        from: "yeLan"
+        name: "q"
+        sequence: 15
+      */
+    reaction3Element(elementPool, idx)
+
   }
 
 }
@@ -418,9 +479,8 @@ function packDamageItem(item, reaction){
 
   const {type, rate} = reaction || {};
   const name = item.sequence.from;
-
   // log('==================')
-  // log(JSON.parse(JSON.stringify(this[name].refineAttr.increaseAddOn)))
+  // log(_.cloneDeep(this.attackAttachArr))
 
   return {
     from: name,
@@ -447,6 +507,8 @@ function packDamageItem(item, reaction){
     monsterBaseResistance: _.cloneDeep(this.resistanceMitigationBase),//伤害对象基础抗性
     monsterMinusResistance: _.cloneDeep(this.resistanceMitigation),   //伤害对象抗性减益
     increaseAddOn: _.cloneDeep(this[name].refineAttr.increaseAddOn),  //额外伤害组件
+    elementPool: _.cloneDeep(elementPool),                     //当前附着元素
+    elementReactionItemsArr: _.cloneDeep(this.elementReactionItemsArr),//元素反应生成物
   }
 }
 
@@ -461,9 +523,9 @@ const reactionType1 = (pool, muti) => {
   }
 };
 //感电
-const reactionType2 = (pool, idx) => {
-  pool[0].amount -= .5;
-  pool[1].amount -= .5
+const reactionType2Electro = (pool, idx) => {
+  pool[0].amount -= .4;
+  pool[1].amount -= .4;
   if(pool[0].amount <= 0 && pool[1].amount <= 0){
     pool.splice(0, 2);
   }else if(pool[0].amount <= 0){
@@ -471,10 +533,22 @@ const reactionType2 = (pool, idx) => {
   }else if(pool[1].amount <= 0){
     pool.splice(1, 1);
   }else{
-    pool[0].endTime = idx + 10;
+    pool[0].endTime = idx + 10; //下一秒继续存续反应
     pool[1].endTime = idx + 10;
   }
 };
+//冻结
+function reactionType2Freeze(pool, idx){
+  const dropElement = pool[0].amount < pool[1].amount ? 0 : 1;
+  const stillElement = +!dropElement;
+  const amount = pool[dropElement].amount;
+  pool[stillElement].amount -= amount;
+  pool.splice(dropElement, 1);
+  this.elementReactionItemsRefine = {
+    name:'element_reaction_freeze',
+    amount: amount * 2,
+  };
+}
 
 /*
   element
@@ -541,6 +615,11 @@ function reaction2Element(pool, idx){
 
   if(elementName1 === '水' && elementName2 === '冰' || elementName1 === '冰' && elementName2 === '水'){
     type = '冻结';
+    // this.note.push({
+    //   type: 'message',
+    //   message: `第${idx/10}秒，触发冻结反应，怪物被冻结。`,
+    // })
+    reactionType2Freeze.bind(this)(pool, idx);
     //todo
   }
 
@@ -551,7 +630,7 @@ function reaction2Element(pool, idx){
       isReaction = false;
     }else{
       type = '感电';
-      reactionType2(pool, idx);
+      reactionType2Electro(pool, idx);
     }
   }
 
@@ -610,6 +689,43 @@ function reaction2Element(pool, idx){
 }
 
 
+function reaction3Element(pool, idx){
+  const elementType1 = pool[0].sequence.attach.element;
+  const elementName1 = getElementZhName(elementType1);
+  const elementType2 = pool[1].sequence.attach.element;
+  const elementName2 = getElementZhName(elementType2);
+  const elementType3 = pool[2].sequence.attach.element;
+  const elementName3 = getElementZhName(elementType3);
+
+  if(['水雷','雷水'].includes(elementName1+elementName2)){
+    //如果是存续反应的补充 - 感电
+    if(['水','雷'].includes(elementName3)){
+      const sameType = elementName1 === elementName3 ? 0 : 1;
+      const elementTimeFirst = pool[sameType].sequence.attach.time;
+      const elementTimeSecond = pool[2].sequence.attach.time;
+      if(elementTimeFirst === 95 && elementTimeSecond === 95){
+        pool[sameType].amount = .8;
+      }
+      if(elementTimeFirst === 95 && elementTimeSecond === 120){
+        pool[sameType].amount = 1.6;
+      }
+      if(elementTimeFirst === 120 && elementTimeSecond === 95){
+        pool[sameType].amount = 1.6;
+      }
+      if(elementTimeFirst === 120 && elementTimeSecond === 120){
+        pool[sameType].amount = 1.6;
+      }
+      pool.splice(2, 1);
+    }
+
+    //elementName3 === 火 / 风 / 岩 等
+
+  }
+
+
+
+  //todo 激化 蔓生
+}
 
 
 

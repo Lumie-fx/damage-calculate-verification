@@ -15,10 +15,9 @@ export function huTao(level, stars, skills=[1,1,1]){
     critical: .05,
     criticalDamage: 1.884,
     energyCharge: 1,
-    elementType: [0,1,0,0,0,0,0,1],//'火', 物理
+    elementType: [0,1,0,0,0,0,0,0],//'火', 物理
     elementMaster: 0,
     elementCharge: [1,1,1,1,1,1,1,1],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
-    otherCharge: [] //英文直接命名 AYAKA_ATTACK20
   };
 
   const talent = function(){
@@ -113,6 +112,45 @@ export function huTao(level, stars, skills=[1,1,1]){
   };
 
   const action = function(){
+
+    this.a = (startIdx) => {
+
+      // console.log(startIdx)
+
+      const start = startIdx;//取第一个
+      const attr = {
+        cd: 0,
+        last: 4,       //todo
+        sequenceA: 2,   //todo
+      };
+
+      const effect = [{
+        from: name,
+        name: 'a1',
+        sequence: attr.sequenceA,
+        damageMultiple: talentDamage.huTao.a1[skills[0]-1].base,
+        damageType: 'A',
+        damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
+        attach: {
+          element: [0,1,0,0,0,0,0,0],
+          type: 'A1'+name,
+          time: 95,
+        }
+      }];
+
+      return [{
+        name: 'huTao_attack_A',
+        main: true,  //主序的、唯一的、必须存在的
+        last: attr.last,
+        lasting: (lastIdx) => {
+          return lastIdx - start === attr.last - 1
+        },
+        type: '单次',
+        sequence: (lastIdx) => {
+          return effect.filter(res => lastIdx - start === res.sequence)
+        },
+      }]
+    }
 
     this.az = (startIdx) => {
 

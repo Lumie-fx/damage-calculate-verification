@@ -3,6 +3,7 @@ import {yeLan} from './yeLan'
 //火
 import {huTao} from './huTao'
 //冰
+import {shenLiLingHua} from './shenLiLingHua'
 //雷
 //风
 import {xiao} from './xiao'
@@ -15,9 +16,11 @@ import {aBeiDuo} from './aBeiDuo'
 export {
   yeLan,
 
-  xiao,
-
   huTao,
+
+  shenLiLingHua,
+
+  xiao,
 
   zhongLi,
   aBeiDuo

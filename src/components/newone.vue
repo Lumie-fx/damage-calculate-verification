@@ -24,29 +24,29 @@ import utils from "../config/utils";
 //数据 todo 接入miao-plugin查询插件数据 - enka
 
 const insert = [{
-  name: 'xiao',
-  element: '风',
+  name: 'shenLiLingHua',
+  element: '冰',
   weapon: {
-    name: 'hePuYuan',
+    name: 'wuQieZhiHuiGuang',
     level: 90,
-    stars: 3,
+    stars: 5,
   },
   level: 90,
-  stars: 0,
-  skill: [10,8,8],
-  wear: [{name: 'jueDouShi', num: 3}, {name:'cuiLv', num: 2}],
+  stars: 6,
+  skill: [10,13,13],
+  wear: [{name: 'bingFeng', num: 4}],
   relics: {
-    life: 4989,
-    lifePercent: .222,
-    attack: 360,
-    attackPercent: .781,
-    defend: 32,
-    defendPercent: 0,
-    critical: .664,//264 todo
-    criticalDamage: 1.267,
-    energyCharge: .201,
-    elementMaster: 82,
-    elementCharge: [0,0,0,0,.466,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+    life: 5348,
+    lifePercent: 0,
+    attack: 342,
+    attackPercent: .95,
+    defend: 77,
+    defendPercent: .066,
+    critical: .443,
+    criticalDamage: 1.174,
+    energyCharge: .052,
+    elementMaster: 23,
+    elementCharge: [0,0,.466,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 },{
   name: 'yeLan',
@@ -315,6 +315,7 @@ export default {
                       effectArea: res.to.effectArea,
                       effectElement: res.to.effectElement,
                       attachedBy: res.to.attachedBy,
+                      attachedType: res.to.attachedType,
                       effectValue: value,
                     },
                     timeCount: res.timeCount
@@ -367,6 +368,7 @@ export default {
 
 
       this.doubleGeoResonateFlag = false;//是否开启双岩共鸣开关
+      this.doubleCryoResonateFlag = false;//是否开启双冰共鸣开关
       this.shieldArr = [];            //护盾{type:'火',name: 'zhongLi_E',time:100},..
 
       this.teamRefine = (type, name, refine) => {
@@ -403,7 +405,14 @@ export default {
             value: {name: 'team_2_pyro_attack_25%', value: .25, type: 'percent'}
           });
         }
-        //todo 双水共鸣
+        //双冰共鸣
+        if(insert.filter(teamMember => teamMember.element === '冰').length >= 2){
+          this.doubleCryoResonateFlag = true;
+        }
+        //todo 双水共鸣 hydro
+        //雷 electro
+        //草 dendro
+        //风 anemo
       }
 
       this.teamSwitchEndFuncArr = [];
@@ -472,8 +481,68 @@ export default {
       this.geoItems = 0;           //当前岩造物数量
       this.beResonatedItems = 0;   //被共鸣物体数量
 
-      //记录怪物减益buff todo 测试
+      this.attackAttachArr = [];   //附魔种类 {name: 'shenLi/all', element: []}
+
+      this.reactionFreeze = {      //冻结反应基本参数
+        base: .04,
+        now: .04,
+        decrease: .02,
+        increase: .01,
+        increaseTimes: 0,
+        decreaseTimes: 0,
+        changeFun(arr, idx){
+          const freeze = _.find(arr, {name: 'element_reaction_freeze'});
+          // log('冻元素',idx,freeze.amount)
+          if(freeze.amount > 0){
+            freeze.amount = freeze.amount >= this.now ? freeze.amount - this.now : 0;
+            this.increaseTimes ++;
+            if(this.increaseTimes >= 10){
+              this.now += this.increase;
+              this.increaseTimes = 0;
+            }
+            this.decreaseTimes = 0;
+          }else{
+            this.decreaseTimes ++;
+            if(this.decreaseTimes >= 10){
+              this.now = this.now - this.decrease >= this.base ? this.now - this.decrease : this.base;
+              this.decreaseTimes = 0;
+            }
+            this.increaseTimes = 0;
+          }
+        },
+      };
+      this.elementReactionItemsArr = [{ //元素反应产物 - 冻、草核、激化
+        name:'element_reaction_freeze',
+        funcName: 'reactionFreeze',
+        amount: 0, // >0 表示被冻结
+      }];
+
+      //记录怪物减益buff + 护盾 + 角色附魔
       const teamDefined = {
+        //元素反应产物
+        elementReactionItemsRefine: {
+          set: obj => {    // {name: 'element_reaction_freeze', role: 'shenLiLingHua', type: 'person(个人生效)/all(所有人生效:班尼特q重云e)', element: [], time: 50}
+            const arr = this.elementReactionItemsArr;
+            if(_.find(arr, {name: obj.name})){
+              const idx = _.findIndex(arr, {name: obj.name});
+              arr[idx].amount += obj.amount;
+            }
+          }
+        },
+        //附魔种类
+        attackAttachRefine: {
+          set: obj => {    // {name: 'shenLi_s_5s', role: 'shenLiLingHua', type: 'person(个人生效)/all(所有人生效:班尼特q重云e)', element: [], time: 50}
+            // log(_.cloneDeep(this.attackAttachArr))
+            const arr = this.attackAttachArr;
+            if(_.find(arr, {name: obj.name})){
+              const idx = _.findIndex(arr, {name: obj.name});
+              arr[idx].time = obj.time;
+            }else{
+              arr.push(obj);
+            }
+          }
+        },
+        //护盾种类
         shieldRefine: {    //{type:'火',name: 'zhongLi_E',time:100}
           set: obj => {
             const arr = this.shieldArr;
@@ -484,6 +553,7 @@ export default {
               arr.push(obj);
               if(arr.length === 1){
                 //开始有护盾事件
+                //双岩共鸣
                 if(this.doubleGeoResonateFlag){
                   this.resistanceMitigationRefine = {
                     name: 'team_2_geo_with_shield_resistance',
@@ -557,8 +627,9 @@ export default {
     let _actions = [];
 
     //todo 可选
-    // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az10-q';
-    const chain = 'xiao:e6-q-d11-e6';
+    // xiao:e6-q-d11-e6    yeLan:q-a-e2|
+    // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
+    const chain = 'yeLan:q-a-e2|shenLiLingHua:s-az-s8-a20';
 
     const rollChainArr = chain.split('|');
 
@@ -605,6 +676,8 @@ export default {
     const actionList = []; //{name: ''}
     let packActions = null;
 
+    let packActionsFlag = true;
+
     for(let i=0; i<wholeTime;i++){
 
       const thisActionName = _actions[pointer]?.name; // -az-
@@ -628,30 +701,45 @@ export default {
         packActions = thisActionArr(i);  //sequence []  --一个last内pack的多个子action值
       }
 
-      packActions.forEach(packAction => {
-        if(packAction.type === '持续'){
-          if(!_.find(actionList, {name: packAction.name})){
-            packAction.duringStart(i);//生效 $001
-            actionList.push(packAction);//当前执行中
-          }
-        }
-        if(packAction.type === '延迟伤害'){//具体分析
-          //1.胡桃雪梅香
-          if(packAction.name === 'huTao_skill_E_xueMeiXiang'){
-            if(!_.find(actionList, {name: packAction.name})){
-              packAction.duringStart(i);//生效  =>  传入i在内部计算
+      //一个动作只执行一次 - todo 测试
+      if(packActionsFlag){
+
+        packActions.forEach(packAction => {
+          if(packAction.type === '持续'){
+            // if(!_.find(actionList, {name: packAction.name})){
+              packAction.duringStart(i);//生效 $001
               actionList.push(packAction);//当前执行中
+            // }
+          }
+          //写的有问题。。 todo
+          if(packAction.type === '持续可覆盖'){
+            // if(!_.find(actionList, {name: packAction.name})){
+              packAction.duringStart(i);
+              actionList.push(packAction);//当前执行中
+            // }else{
+              // _.find(actionList, {name: packAction.name})?.duringStart(i);
+            // }
+          }
+          if(packAction.type === '延迟伤害'){//具体分析  -- 延迟伤害就这2个, 是否统一循环处理
+            //1.胡桃雪梅香
+            if(packAction.name === 'huTao_skill_E_xueMeiXiang'){
+              if(!_.find(actionList, {name: packAction.name})){ //只存在单个需要这个判断
+                packAction.duringStart(i);//生效  =>  传入i在内部计算
+                actionList.push(packAction);//当前执行中
+              }
+            }
+            //2.钟离共鸣
+            if(packAction.name === 'zhongLi_skill_E_gongMing'){
+              if(!_.find(actionList, {name: packAction.name})){ //todo 多个不需要这个判断 - 共鸣流
+                packAction.duringStart(i);//生效  =>  传入i在内部计算
+                actionList.push(packAction);//当前执行中
+              }
             }
           }
-          //2.钟离共鸣
-          if(packAction.name === 'zhongLi_skill_E_gongMing'){
-            if(!_.find(actionList, {name: packAction.name})){
-              packAction.duringStart(i);//生效  =>  传入i在内部计算
-              actionList.push(packAction);//当前执行中
-            }
-          }
-        }
-      });
+        });
+      }
+      packActionsFlag = false;
+
 
       //持续型buff增益结束时的清除缓存
       const clearList = [];
@@ -690,6 +778,11 @@ export default {
           chargeElementSequence.bind(teamPack)(i, null);
         }
 
+        // if(packAction.type === '持续'){
+        //
+        // }
+
+        //这里有点奇怪 -- todo 重新验证下
         if(packAction.type === '延迟伤害'){
           //胡桃的特殊触发, 重击延长雪梅香时间
           if(packAction.name === 'huTao_skill_E_xueMeiXiang'){
@@ -709,8 +802,8 @@ export default {
           if(timingEvent.type === '1'){
             //todo duration = number or array 分别叠层的情况:冬极白星
             if(timingEvent?.duration > 0){
-              log('<<<<<<<<<<<<<<<<<<<')
-              log(i, timingEvent?.duration)
+              // log('<<<<<<<<<<<<<<<<<<<')
+              // log(i, timingEvent?.duration)
               timingEvent.duration --;
             }
             if(timingEvent?.duration === 0){
@@ -718,7 +811,7 @@ export default {
               timingEvent.durationEnd();
             }
           }
-          //
+          // - 类似辰砂之纺锤的处理
           if(timingEvent.type === '2'){
             if(timingEvent?.duration > 0){
               timingEvent.duration --;
@@ -739,10 +832,10 @@ export default {
 
       // log(i, JSON.parse(JSON.stringify(teamPack?.xiao.refineAttr)))
 
-
+      //护盾时序
       const delShieldIdx = [];
       teamPack.shieldArr.forEach((shield, s_idx) => {
-        if(shield?.time){
+        if(shield?.time || shield.time === 0){
           shield.time --;
           if(shield.time <= 0){
             delShieldIdx.push(s_idx);
@@ -767,12 +860,36 @@ export default {
         }
       }
 
+      //附魔时序
+      const delAttackAttachIdx = [];
+      teamPack.attackAttachArr.forEach((attach, a_idx) => {
+        if(attach?.time || attach.time === 0){
+          attach.time --;
+          if(attach.time <= 0){
+            attach?.end(i);//附魔结束事件
+            delAttackAttachIdx.push(a_idx);
+          }
+        }
+      });
+      if(delAttackAttachIdx.length > 0){
+        delAttackAttachIdx.reverse().forEach(d_idx => {
+          teamPack.attackAttachArr.splice(d_idx, 1);
+        });
+      }
+
+      //元素反应生成物时序
+      teamPack.elementReactionItemsArr.forEach(res => {
+        teamPack[res.funcName].changeFun(teamPack.elementReactionItemsArr, i)
+      });
+
+
 
       packActions.forEach(packAction => {
         //当前动作主序时长结束, 指针+1, 读取下一动作
         if(packAction?.main && packAction?.lasting(i)){
           packActions = null;
           pointer++;
+          packActionsFlag = true;
         }
       });
 

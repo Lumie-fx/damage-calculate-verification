@@ -24,3 +24,60 @@
     elementCharge: [0,.466,0,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 }
+
+
+{
+  name: 'shenLiLingHua',
+  element: '冰',
+  weapon: {
+    name: 'wuQieZhiHuiGuang',
+    level: 90,
+    stars: 5,
+  },
+  level: 90,
+  stars: 6,
+  skill: [10,13,13],
+  wear: [{name: 'bingFeng', num: 4}],
+  relics: {
+    life: 5348,
+    lifePercent: 0,
+    attack: 342,
+    attackPercent: .95,
+    defend: 77,
+    defendPercent: .066,
+    critical: .443,
+    criticalDamage: 1.174,
+    energyCharge: .052,
+    elementMaster: 23,
+    elementCharge: [0,0,.466,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+  },
+}
+
+
+
+{
+  name: 'xiao',
+  element: '风',
+  weapon: {
+    name: 'hePuYuan',
+    level: 90,
+    stars: 3,
+  },
+  level: 90,
+  stars: 0,
+  skill: [10,8,8],
+  wear: [{name: 'jueDouShi', num: 3}, {name:'cuiLv', num: 2}],
+  relics: {
+    life: 4989,
+    lifePercent: .222,
+    attack: 360,
+    attackPercent: .781,
+    defend: 32,
+    defendPercent: 0,
+    critical: .264,
+    criticalDamage: 1.267,
+    energyCharge: .201,
+    elementMaster: 82,
+    elementCharge: [0,0,0,0,.466,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+  },
+}
