@@ -392,7 +392,8 @@ function attach(item, idx){
     const {type,rate,isReaction,amount0} = reaction2Element.bind(this)(elementPool, idx);
 
     if(isReaction){
-      if(['感电','扩散','超导','冻结'].includes(type||'')){
+      //                                                   仅元素附着不进行伤害计算
+      if(['感电','扩散','超导'].includes(type||'') && item.sequence.damageType!=='T'){
         this.note.push({
           from: item.sequence.from,
           timing: idx,
@@ -458,10 +459,9 @@ function attach(item, idx){
 function notAttach(item, idx){
   // log('not attach', idx, item.sequence.name);
 
-  //todo
-  if(item.sequence.from === 'aBeiDuo'){
-    log(idx,'abd doing3')
-  }
+  // if(item.sequence.from === 'aBeiDuo'){
+  //   log(idx,'abd doing3')
+  // }
 
 
   this.note.push({

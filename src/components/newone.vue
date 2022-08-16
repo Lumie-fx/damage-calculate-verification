@@ -629,7 +629,7 @@ export default {
     //todo 可选
     // xiao:e6-q-d11-e6    yeLan:q-a-e2|
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
-    const chain = 'yeLan:q-a-e2|shenLiLingHua:s-az-s8-a20';
+    const chain = 'yeLan:q-a-e2|shenLiLingHua:s-e-az';
 
     const rollChainArr = chain.split('|');
 

@@ -374,7 +374,7 @@ export function huTao(level, stars, skills=[1,1,1]){
             type: 'message',
             message: `第${idxNew/10}秒，胡桃进入彼岸蝶舞状态，攻击提升${Math.round(attackAdd)}。`,
           });
-          //魔女套叠层
+          //魔女套叠层 -- todo 挪出去?
           this.eventTrigger.filter(res => res.bindAction === 'E').forEach(res => {
             res.reward();
           });

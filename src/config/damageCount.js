@@ -82,6 +82,9 @@ export const damageCount = function(note){
 
       // log(defendMinus,resistanceMinus, zengFuMuti)
 
+      //todo 仅元素附着
+      //todo 冻结
+
       if(['燃烧','超导','扩散','感电','超载'].includes(type)){
         noteList.push({
           type: 'message',
@@ -226,6 +229,9 @@ const chargeArea = (attr) => {
   const juBianResistance = .1; //怪物剧变反应抗性, 在此拟定
   //剧变反应增幅百分比 + 1
   const juBianIncrease = 16 * elementMaster / (2000 + elementMaster) + 1;
+
+  //todo 绽放4 超绽放6 烈绽放6
+  // 草水 1:2
 
   if(type === '燃烧'){//出伤害
     chargeRate = .5;
