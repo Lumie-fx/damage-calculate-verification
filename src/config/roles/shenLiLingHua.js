@@ -20,9 +20,9 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
     elementCharge: [1,1,1,1,1,1,1,1],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   };
 
-  //2命q触发2个小冰华各20% - todo
-  //4命q命中减防30%6s - todo
-  //6命z+298% 0.5s/10s - todo
+  //2命q触发2个小冰华各20% - ok
+  //4命q命中减防30%6s - ok
+  //6命z+298% 0.5s/10s - ok
 
   //天赋0 冲刺附魔 - ok
   //天赋1 e后az+30% - ok
@@ -38,7 +38,163 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
     if(level >= 70){
       talentFlag2 = true;
     }
+
+    if(stars >= 4){
+      this.eventTrigger.push({
+        type: '1',
+        name: name+'_star4_defendMinus',
+        // bindAction: 'Q',
+        reward: () => {
+          this.super.defendMitigationRefine = {
+            name: name+'_star4_defendMinus_30%',
+            value: .3,
+          };
+          this.duration = 60;//刷新持续时间
+        },
+        duration: 60,
+        durationEnd:() => {
+          this.super.defendMitigationRefine = {
+            name: name+'_star4_defendMinus_30',
+            value: 0,
+          };
+        }
+      });
+    }
+
+    if(stars >= 6){
+      const that = this;
+      this.eventTrigger.push({ //$003
+        type: '2',
+        from: name,
+        name: 'role_'+name+'_star6_attack_Z',
+        bindAction: 'Z',
+        reward(idx){
+          // log(idx,'reward',this.name)
+          that.increaseAddOnRefine = {
+            name: 'role_'+name+'_star6_attack_z_charge_298%',
+            effect: {
+              effectAction: [0,1,0,0,0],
+              effectWeaponType: [1,1,1,1,1],
+              effectArea: 'elementCharge',
+              effectElement: [1,1,1,1,1,1,1,1],
+              attachedBy: [0,0,0,0,0,0,0,0],
+              effectValue: 2.98
+            },
+            timeCount: 10000
+          };
+        },
+        isCd: false,
+        open: false,
+        duration: 6, //实际-1
+        cd: 101,      //实际-1
+        durationEnd(){
+          that.increaseAddOnRefine = {
+            name: 'role_'+name+'_star6_attack_z_charge_298%',
+            effect: {
+              effectAction: [0,1,0,0,0],
+              effectWeaponType: [1,1,1,1,1],
+              effectArea: 'elementCharge',
+              effectElement: [1,1,1,1,1,1,1,1],
+              attachedBy: [0,0,0,0,0,0,0,0],
+              effectValue: 0
+            },
+            timeCount: 10000
+          };
+
+          this.duration = 6;//刷新持续时间
+          this.open = false;
+        },
+        cdEnd(){
+          this.cd = 101;
+          this.isCd = false;
+        }
+      });
+    }
   };
+
+  const shuangMieSequence = {
+    from: name,
+    name: '霜灭',
+    sequence: 1,
+    damageMultiple: talentDamage[name].q[skills[2]-1].base,
+    damageType: 'Q',
+    damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
+    attach: {
+      element: [0,0,1,0,0,0,0,0],
+      type: 'A_linghua_q',
+      time: 95,
+    },
+    lockedAttr: null,
+  };
+
+  const shuangMieSequenceFinal = {
+    from: name,
+    name: '霜灭·绽放',
+    sequence: 1,
+    damageMultiple: talentDamage[name].q[skills[2]-1].final,
+    damageType: 'Q',
+    damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
+    attach: {
+      element: [0,0,1,0,0,0,0,0],
+      type: 'A_linghua_q',
+      time: 95,
+    },
+    lockedAttr: null,
+  };
+
+  const shuangMie = (attr, that) => {
+    return {
+      name: name+'_skill_Q_shuangMie',
+      main: false,  //主序的、唯一的、必须存在的
+      last: 50,     //霜灭持续时间
+      //lastStartTime, //duringStart, 循环内会补充, 上次生效时间
+      //endTime,       //duringStart, 循环内会补充, 次序结束时间
+      justSecond: 2, //单独处理, 为了5s/20=2.5取整
+      type: '延迟伤害',
+      lasting(idxNew){
+        return idxNew >= this.endTime;
+      },
+      duringStart(idxNew){
+        //初次不生效
+        // const z_effect_time = attr.sequenceZ; //这个是重击触发的轴
+        this.endTime = attr.last + idxNew + this.last;//last 18是q后霜灭生成的时间
+        this.lastStartTime = idxNew + attr.last;
+        //锁面板
+        shuangMieSequence.lockedAttr = _.cloneDeep(that.refineAttr);
+        shuangMieSequenceFinal.lockedAttr = _.cloneDeep(that.refineAttr);
+      },
+      // refresh(idxNew){ //搜 type === '延迟伤害'
+      //   this.endTime = this.last + idxNew;
+      // },
+      during(idxNew){//最新的时间
+        let flag = false;
+        let sequence = shuangMieSequence;
+        if(idxNew - (this?.lastStartTime||0) >= this.justSecond){ //0.3s渐次触发时间
+          this.justSecond = this.justSecond === 2 ? 3 : 2;
+          this.lastStartTime = idxNew;
+          flag = true;
+        }
+        if(idxNew === this?.endTime){
+          sequence = shuangMieSequenceFinal;
+        }
+        if(stars >= 2){
+          const smallOne = Object.assign(_.cloneDeep(sequence),{damageBase:[{base: 'attack', rate: .2, from: name, main: true}]});
+          sequence = [sequence, smallOne, smallOne];
+        }
+        if(stars >= 4 && flag){
+          _.find(that.eventTrigger, {name: name+'_star4_defendMinus'}).reward();
+        }
+        return {
+          flag,
+          sequence,
+        }; //中间触发时间
+      },
+      duringEnd(idxNew){
+        return this.lasting(idxNew);
+      }
+    }
+  };
+
 
   const action = function(){
 
@@ -317,7 +473,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
           duringEnd: (idxNew)=>{
             this.super.note.push({
               type: 'message',
-              message: `第${idxNew/10}秒，神里绫华攻击提升恢复。`,
+              message: `第${idxNew/10}秒，神里绫华通过冰花提升的攻击加成恢复。`,
             });
             this.increaseAddOnRefine = {
               name: name+'_talent_1',
@@ -340,6 +496,47 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
     }
 
     this.q = (startIdx) => {
+
+      const start = startIdx; //取第一个
+      const attr = {
+        cd: 200,
+        last: 18,
+        // sequence: 8,
+        during: 59,
+      };
+
+      const effect = [{
+        from: name,
+        name: 'q_start',
+        sequence: 10000,     // 0~7 对应的last=8为末尾   todo 具体帧
+        damageMultiple: 0,
+        damageBase: [],
+        damageType: 'Q',
+        attach: {
+          element: [0,0,1,0,0,0,0,0],
+          type: 'C_linghua',
+          time: 95,
+        }
+      }];
+
+      return [{
+        name: name+'_skill_Q_start',
+        main: true, //主序的、唯一的、必须存在的
+        last: attr.last,
+        lasting: (lastIdx)=>{
+          if(lastIdx - start === attr.last - 1){
+            this.super.note.push({
+              type: 'message',
+              message: `第${lastIdx/10}秒，神里绫华施放神里流·霜灭，造成冰刃切割伤害。`,
+            });
+          }
+          return lastIdx - start === attr.last - 1
+        },
+        type: '单次',
+        sequence: (lastIdx) => {
+          return effect.filter(res => lastIdx - start === res.sequence)
+        },
+      }, shuangMie(attr, that)]
 
     }
   };

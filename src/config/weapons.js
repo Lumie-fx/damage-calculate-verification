@@ -129,8 +129,9 @@ export default {
     };
 
     //todo 叠层 1.a触发元素伤害/10s 2.释放q/10s 3.能量不足100%
+    //             1.订阅者
     const getCharge = (num) => {//num=1,2,3
-      return [[.08,.16,.28],[.1,.2,.35],[.12,.24,.42],[.14,.28,.49],[.16,.32,.56],][stars][num-1];
+      return [[.08,.16,.28],[.1,.2,.35],[.12,.24,.42],[.14,.28,.49],[.16,.32,.56]][stars-1][num-1];
     };
 
     return {
@@ -138,9 +139,9 @@ export default {
       refine(){
         this.criticalDamageRefine = {name: 'criticalDamage_'+wn, value: attr.others.criticalDamage, type: 'number'};
         this.elementChargeRefine = {name: 'elementCharge_'+wn, value: attr.others.elementCharge, type: 'number'};
-
-
-        log(this.attr.elementType)
+        this.elementChargeRefine = {name: 'elementCharge_'+wn+'_single', value: this.attr.elementType.map(res=>{
+          return res * getCharge(3)
+        }), type: 'number'};
       }
     }
   },
@@ -202,7 +203,8 @@ export default {
               timeCount: 10000
             };
           },
-          open: true,
+          isCd: false,
+          open: false,
           duration: 3, //实际-1
           cd: 16,      //实际-1
           durationEnd(){
@@ -219,10 +221,11 @@ export default {
               timeCount: 10000
             };
             this.duration = 3;//刷新持续时间
+            this.open = false;
           },
           cdEnd(){
-            this.open = true;
             this.cd = 16;
+            this.isCd = false;
           }
         });
 

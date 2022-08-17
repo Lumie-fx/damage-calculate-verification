@@ -588,7 +588,7 @@ export default {
           }
         },
         defendMitigationRefine: {
-          set: obj => { //obj: {name: 'huTao_skillE_benefit', value: 2000, type: 'percent/number'}
+          set: obj => { //obj: {name: 'huTao_skillE_benefit', value: .3}  -- , type: 'percent/number' 暂时都是百分比
             const arr = this.defendMitigationArr;
             if(_.find(arr, {name: obj.name})){
               const idx = _.findIndex(arr, {name: obj.name});
@@ -629,7 +629,7 @@ export default {
     //todo 可选
     // xiao:e6-q-d11-e6    yeLan:q-a-e2|
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
-    const chain = 'yeLan:q-a-e2|shenLiLingHua:s-e-az';
+    const chain = 'shenLiLingHua:s-a-e-q-s-az20';
 
     const rollChainArr = chain.split('|');
 
@@ -721,20 +721,15 @@ export default {
             // }
           }
           if(packAction.type === '延迟伤害'){//具体分析  -- 延迟伤害就这2个, 是否统一循环处理
-            //1.胡桃雪梅香
-            if(packAction.name === 'huTao_skill_E_xueMeiXiang'){
+            // if(packAction.name === 'huTao_skill_E_xueMeiXiang'){
               if(!_.find(actionList, {name: packAction.name})){ //只存在单个需要这个判断
                 packAction.duringStart(i);//生效  =>  传入i在内部计算
                 actionList.push(packAction);//当前执行中
               }
-            }
-            //2.钟离共鸣
-            if(packAction.name === 'zhongLi_skill_E_gongMing'){
-              if(!_.find(actionList, {name: packAction.name})){ //todo 多个不需要这个判断 - 共鸣流
-                packAction.duringStart(i);//生效  =>  传入i在内部计算
-                actionList.push(packAction);//当前执行中
-              }
-            }
+            // }
+            //1.胡桃雪梅香 huTao_skill_E_xueMeiXiang
+            //2.钟离共鸣 zhongLi_skill_E_gongMing
+            //3.绫华霜灭 shenLiLingHua_skill_Q_shuangMie
           }
         });
       }
@@ -750,8 +745,10 @@ export default {
         if(duringStatus?.flag){
           //存在触发队列
           if(duringStatus?.sequence){
+            const _sequence = duringStatus.sequence;
+            const _sequenceArr = utils.queryValueType(_sequence) === 'Array' ? _sequence : [_sequence];
             //                                      此为1.胡桃雪梅香的延时触发sequence
-            chargeElementSequence.bind(teamPack)(i, [duringStatus.sequence]);
+            chargeElementSequence.bind(teamPack)(i, _sequenceArr);
           }
           const endFlag = fnObj.duringEnd(i);
           if(endFlag){
@@ -811,18 +808,19 @@ export default {
               timingEvent.durationEnd();
             }
           }
-          // - 类似辰砂之纺锤的处理
+          // - 类似辰砂之纺锤的处理 、绫华6命 $003
           if(timingEvent.type === '2'){
-            if(timingEvent?.duration > 0){
+            if(timingEvent?.duration > 0 && timingEvent.open){
               timingEvent.duration --;
             }
-            if(timingEvent?.cd > 0){
+            if(timingEvent?.cd > 0 && timingEvent.isCd){
               timingEvent.cd --;
             }
-            if(timingEvent?.duration === 0){
+            if(timingEvent?.duration === 0 && timingEvent.open){
+              log(i, 'durationEnd',timingEvent.name)
               timingEvent.durationEnd();
             }
-            if(timingEvent?.cd === 0){
+            if(timingEvent?.cd === 0 && timingEvent.isCd){
               timingEvent.cdEnd();
             }
           }
