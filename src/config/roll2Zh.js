@@ -34,5 +34,11 @@ export default {
     action: {
 
     }
+  },
+  shenHe: {
+    name: '申鹤',
+    action: {
+
+    }
   }
 }

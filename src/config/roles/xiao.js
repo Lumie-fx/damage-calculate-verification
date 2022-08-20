@@ -129,6 +129,7 @@ export function xiao(level, stars, skills=[1,1,1]){
       return [{
         name: 'xiao_attack_DS_D',
         main: true,  //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
           return lastIdx - start === attr.last - 1
@@ -166,6 +167,7 @@ export function xiao(level, stars, skills=[1,1,1]){
       return [{
         name: 'xiao_skill_E',
         main: true, //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx)=>{
           return lastIdx - start === attr.last - 1
@@ -197,6 +199,7 @@ export function xiao(level, stars, skills=[1,1,1]){
       return [{
         name: 'xiao_skill_Q',
         main: true, //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         type: '持续',//during duringEnd
         lasting: (idxNew)=>{

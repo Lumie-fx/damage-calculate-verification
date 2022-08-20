@@ -94,6 +94,7 @@ export function aBeiDuo(level, stars, skills=[1,1,1]){
       return [{
         name: 'aBeiDuo_skill_E',
         main: true, //主序的、唯一的、必须存在的  -- 绑定last和lasting
+        cd: attr.cd,
         last: attr.last,
         type: '单次',
         lasting: (lastIdx)=>{

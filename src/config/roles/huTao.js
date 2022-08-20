@@ -141,6 +141,7 @@ export function huTao(level, stars, skills=[1,1,1]){
       return [{
         name: 'huTao_attack_A',
         main: true,  //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
           return lastIdx - start === attr.last - 1
@@ -193,6 +194,7 @@ export function huTao(level, stars, skills=[1,1,1]){
       return [{
         name: 'huTao_attack_AZ',
         main: true,  //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
           return lastIdx - start === attr.last - 1
@@ -256,6 +258,7 @@ export function huTao(level, stars, skills=[1,1,1]){
       return [{
         name: 'huTao_attack_AAZ',
         main: true,  //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
           return lastIdx - start === attr.last - 1
@@ -331,6 +334,7 @@ export function huTao(level, stars, skills=[1,1,1]){
       return [{
         name: 'huTao_attack_AAAZ',
         main: true,  //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
           return lastIdx - start === attr.last - 1
@@ -360,6 +364,7 @@ export function huTao(level, stars, skills=[1,1,1]){
       return [{
         name: 'huTao_skill_E',
         main: true, //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         type: '持续',//during duringEnd
         lasting: (idxNew)=>{
@@ -445,6 +450,7 @@ export function huTao(level, stars, skills=[1,1,1]){
       return [{
         name: 'huTao_skill_Q',
         main: true, //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx)=>{
           return lastIdx - start === attr.last - 1

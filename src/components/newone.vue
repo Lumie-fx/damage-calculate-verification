@@ -20,7 +20,7 @@ import {damageCount} from '../config/damageCount'
 import relics from '../config/relics' //模拟当前圣遗物属性
 import utils from "../config/utils";
 
-
+//todo large 等级规整 role中按不同等级规整属性和突破属性(每10级)
 //数据 todo 接入miao-plugin查询插件数据 - enka
 
 const insert = [{
@@ -629,7 +629,7 @@ export default {
     //todo 可选
     // xiao:e6-q-d11-e6    yeLan:q-a-e2|
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
-    const chain = 'shenLiLingHua:s-a-e-q-s-az20';
+    const chain = 'shenLiLingHua:s-a-e3-a-e3';
 
     const rollChainArr = chain.split('|');
 
@@ -678,7 +678,10 @@ export default {
 
     let packActionsFlag = true;
 
-    for(let i=0; i<wholeTime;i++){
+    const cdObj = {};
+    let cdList = [];
+
+    for(let i = 0; i < wholeTime; i++){
 
       const thisActionName = _actions[pointer]?.name; // -az-
       const thisActionArr = _actions[pointer]?.action; // func az
@@ -703,6 +706,20 @@ export default {
 
       //一个动作只执行一次 - todo 测试
       if(packActionsFlag){
+        // log(i, thisActionArr)
+        //存cd>0的动作名称和cd
+        const actMain = packActions.filter(res => res.main)?.[0];
+        if(cdObj[actMain.name] > 0 && !cdList.includes(actMain.name)){//第二次
+          cdList.push(actMain.name);
+          log(i, '第二次', _.cloneDeep(cdList))
+        }
+        if(actMain.cd > 0 && !cdList.includes(actMain.name)){ //第一次
+          cdObj[actMain.name] = actMain.cd;
+          log(i, '第一次', _.cloneDeep(cdObj))
+        }
+        //todo 问题出在这，第二次的时候已经执行了，没法跳出
+
+        // log(i , packActions.filter(res=>res.main)[0].cd)
 
         packActions.forEach(packAction => {
           if(packAction.type === '持续'){
@@ -734,7 +751,6 @@ export default {
         });
       }
       packActionsFlag = false;
-
 
       //持续型buff增益结束时的清除缓存
       const clearList = [];
@@ -778,6 +794,7 @@ export default {
         // if(packAction.type === '持续'){
         //
         // }
+
 
         //这里有点奇怪 -- todo 重新验证下
         if(packAction.type === '延迟伤害'){
@@ -882,6 +899,40 @@ export default {
 
 
 
+
+
+      //冷却没结束直接等待
+      //todo 2个问题
+      // 1.技能时长存了以后, 第一次仍然要到cd结束才走的到下个pointer
+      // 2.cd>last时, packAction?.lasting不触发了, 是否packAction?.lasting改为>=  - 绫华eq改了, 貌似ok
+
+      //cd过去1, 读秒
+      // actionCdGoTime1();
+      //
+      // const action2Name = packActions.filter(res => res.main)?.[0].name;
+      // log(i, nextActionName)
+      // if(nextActionName.includes(action2Name)){
+      //   // if(action2Name === 1) debugger
+      //   // log(i, nextActionName)
+      //   continue;
+      // }
+      const cdDelList = [];
+      for(let cdName in cdObj){
+        cdObj[cdName]--
+        if(cdObj[cdName] === 0){
+          cdDelList.push(cdName);
+        }
+      }
+      cdList = cdList.filter(_name => !cdDelList.includes(_name));
+
+      const action2Name = packActions.filter(res => res.main)?.[0].name;
+
+      log(i,_.cloneDeep(cdList), action2Name)
+
+      if(cdList.includes(action2Name)){
+        continue;
+      }
+
       packActions.forEach(packAction => {
         //当前动作主序时长结束, 指针+1, 读取下一动作
         if(packAction?.main && packAction?.lasting(i)){
@@ -890,7 +941,6 @@ export default {
           packActionsFlag = true;
         }
       });
-
     }
 
     const notes = damageCount(teamPack.note);

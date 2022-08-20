@@ -229,6 +229,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
       return [{
         name: 'shenLiLingHua_spurt',
         main: true, //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         type: '持续可覆盖',//during duringEnd
         lasting: (idxNew)=>{
@@ -313,6 +314,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
       return [{
         name: name+'_attack_A',
         main: true,  //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
           return lastIdx - start === attr.last - 1
@@ -391,6 +393,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
       return [{
         name: 'huTao_attack_AZ',
         main: true,  //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
           return lastIdx - start === attr.last - 1
@@ -429,9 +432,10 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
       let sequenceArr = [{
         name: name+'_skill_E',
         main: true,  //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last;
         },
         type: '单次',
         sequence: (lastIdx) => {
@@ -473,7 +477,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
           duringEnd: (idxNew)=>{
             this.super.note.push({
               type: 'message',
-              message: `第${idxNew/10}秒，神里绫华通过冰花提升的攻击加成恢复。`,
+              message: `第${idxNew/10}秒，神里绫华通过神里流·冰华提升的攻击加成恢复。`,
             });
             this.increaseAddOnRefine = {
               name: name+'_talent_1',
@@ -502,7 +506,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
         cd: 200,
         last: 18,
         // sequence: 8,
-        during: 59,
+        during: 50,
       };
 
       const effect = [{
@@ -522,6 +526,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
       return [{
         name: name+'_skill_Q_start',
         main: true, //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx)=>{
           if(lastIdx - start === attr.last - 1){
@@ -530,7 +535,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
               message: `第${lastIdx/10}秒，神里绫华施放神里流·霜灭，造成冰刃切割伤害。`,
             });
           }
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last
         },
         type: '单次',
         sequence: (lastIdx) => {

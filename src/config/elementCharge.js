@@ -530,12 +530,12 @@ const reactionType2Electro = (pool, idx) => {
   if(pool[0].amount <= 0 && pool[1].amount <= 0){
     pool.splice(0, 2);
   }else if(pool[0].amount <= 0){
-    pool.splice(0, 1);
+    pool.splice(0, 2); //后手无残留
   }else if(pool[1].amount <= 0){
     pool.splice(1, 1);
   }else{
-    pool[0].endTime = idx + 10; //下一秒继续存续反应
-    pool[1].endTime = idx + 10;
+    pool[0].endTime = idx + 5; //下0.5秒继续存续反应
+    pool[1].endTime = idx + 5;
   }
 };
 //冻结

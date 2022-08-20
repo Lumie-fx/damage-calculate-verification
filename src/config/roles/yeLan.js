@@ -66,6 +66,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
       return [{
         name: 'yeLan_attack_A',
         main: true,  //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
           return lastIdx - start === attr.last - 1
@@ -111,6 +112,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
       return [{
         name: 'yeLan_skill_E',
         main: true, //主序的、唯一的、必须存在的
+        cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx)=>{
           return lastIdx - start === attr.last - 1
@@ -178,6 +180,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
       const returnList = [{
         name: 'yeLan_skill_Q',
         main: true, //主序的、唯一的、必须存在的  -- 绑定last和lasting
+        cd: attr.cd,
         last: attr.last,
         type: '单次',
         lasting: (lastIdx)=>{
