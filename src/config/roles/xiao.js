@@ -176,7 +176,7 @@ export function xiao(level, stars, skills=[1,1,1]){
         sequence: (lastIdx) => {
           //                                   + 1 (e之后触发)
           if(lastIdx - start === attr.sequence + 1 && isTalent2){
-            log(that.eventTrigger.length)
+            // log(that.eventTrigger.length)
             that.eventTrigger.filter(res => res.bindAction === 'E' && res.name === 'xiao_talent2_skillE_charge').forEach(res => {
               res.reward();
             });
@@ -258,7 +258,7 @@ export function xiao(level, stars, skills=[1,1,1]){
         during: (idxNew)=>{
           //自身每30个idx进行一次增长
           const effectTime = idxNew - start; // 0~154
-          log(effectTime)
+          // log(effectTime)
           if(effectTime >= 0 && effectTime % 30 === 0){
             //idxNew - start - attr.last   0~149
             let increase = Math.floor(effectTime / 30) * .05 + .05;//初始1层

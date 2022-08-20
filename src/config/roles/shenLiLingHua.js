@@ -412,7 +412,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
         cd: 100,
         last: 8,       //todo
         during: 60,
-        sequence: 8,   //todo
+        sequence: 7,   //todo
       };
 
       const effect = [{
@@ -529,16 +529,16 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx)=>{
+          return lastIdx - start >= attr.last - 1;
+        },
+        type: '单次',
+        sequence: (lastIdx) => {
           if(lastIdx - start === attr.last - 1){
             this.super.note.push({
               type: 'message',
               message: `第${lastIdx/10}秒，神里绫华施放神里流·霜灭，造成冰刃切割伤害。`,
             });
           }
-          return lastIdx - start >= attr.last - 1;
-        },
-        type: '单次',
-        sequence: (lastIdx) => {
           return effect.filter(res => lastIdx - start === res.sequence)
         },
       }, shuangMie(attr, that)]

@@ -25,29 +25,29 @@ import utils from "../config/utils";
 //数据 todo 接入miao-plugin查询插件数据 - enka
 
 const insert = [{
-  name: 'shenLiLingHua',
-  element: '冰',
+  name: 'xiao',
+  element: '风',
   weapon: {
-    name: 'wuQieZhiHuiGuang',
+    name: 'hePuYuan',
     level: 90,
-    stars: 5,
+    stars: 3,
   },
   level: 90,
-  stars: 6,
-  skill: [10,13,13],
-  wear: [{name: 'bingFeng', num: 4}],
+  stars: 0,
+  skill: [10,8,8],
+  wear: [{name: 'jueDouShi', num: 3}, {name:'cuiLv', num: 2}],
   relics: {
-    life: 5348,
-    lifePercent: 0,
-    attack: 342,
-    attackPercent: .95,
-    defend: 77,
-    defendPercent: .066,
-    critical: .443,
-    criticalDamage: 1.174,
-    energyCharge: .052,
-    elementMaster: 23,
-    elementCharge: [0,0,.466,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+    life: 4989,
+    lifePercent: .222,
+    attack: 360,
+    attackPercent: .781,
+    defend: 32,
+    defendPercent: 0,
+    critical: .264,
+    criticalDamage: 1.267,
+    energyCharge: .201,
+    elementMaster: 82,
+    elementCharge: [0,0,0,0,.466,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 },{
   name: 'yeLan',
@@ -347,6 +347,9 @@ export default {
     }
 
     const getTeam = function(){
+
+      this.skillFree = [];
+
       this.team = insert.map(roll=>{
         const name = roll.name;
         const weapon = roll.weapon;
@@ -626,11 +629,14 @@ export default {
     log(teamPack)
 
     let _actions = [];
+    let _switchActions = [];
 
-    //todo 可选
+    //todo 可选 - 最后加上-end
     // xiao:e6-q-d11-e6    yeLan:q-a-e2|
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
-    const chain = 'zhongLi:el-q10';
+    // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|shenLiLingHua:s-a-e-q-az3-end';
+    // const chain = 'shenLiLingHua:e-q-end';
+    const chain = 'xiao:e5-q-d11-e5';
 
     const rollChainArr = chain.split('|');
 
@@ -640,6 +646,10 @@ export default {
       _actions.push({
         name, //huTao
         action: 'switch',
+      });
+      _switchActions.push({
+        name,
+        action: 'switch'
       });
       //单人轴: e-az9-q
       rollAndChain[1].split('-').forEach(actStr=>{
@@ -651,6 +661,10 @@ export default {
               name: _key,
               action: teamPack[name][_key]
             });
+            _switchActions.push({
+              name,
+              action: _key
+            });
           }
         }else{
           const _key = actStr.replace(/\d/g, '');
@@ -658,17 +672,20 @@ export default {
             name: _key,
             action: teamPack[name][_key]
           });
+          _switchActions.push({
+            name,
+            action: _key
+          });
         }
       })
     });
-
 
     //todo while
     // const wholeTime = _actions.reduce((allValue, nowValue)=>{
     //   return person[nowValue]().filter(res=>res.main)[0].last + allValue
     // },0);
 
-    const wholeTime = 500;
+    const wholeTime = 1000;
 
     log(`wholeTime: ${wholeTime}`);
     log(_actions)
@@ -841,7 +858,7 @@ export default {
               timingEvent.cd --;
             }
             if(timingEvent?.duration === 0 && timingEvent.open){
-              log(i, 'durationEnd',timingEvent.name)
+              // log(i, 'durationEnd',timingEvent.name)
               timingEvent.durationEnd();
             }
             if(timingEvent?.cd === 0 && timingEvent.isCd){
@@ -930,6 +947,7 @@ export default {
       //   continue;
       // }
 
+
       if(thisActionArr === 'switch'){
         if(i - cdObj.lastSwitchTime >= 10){
           cdObj.lastSwitchTime = i;
@@ -945,22 +963,30 @@ export default {
         continue;
       }
 
-      const thisCd = talentDamage[thisName]?.[thisActionName]?.[0]?.cd;
-      if(thisCd){
-        const cdKey = thisName+'-'+thisActionName;
-        if(!cdObj[cdKey]){
-          cdObj[cdKey] = -1000;
-        }
-        log(i,thisName, thisActionName, 'func', cdObj[cdKey], thisCd)
-
-        if(i - cdObj[cdKey] >= thisCd){
-          cdObj[cdKey] = i;
-        }else{
-          // teamPack.note.push({type: 'message', message: `第${i/10}秒，${thisName}的${thisActionName}正在冷却中。`})
-          continue;
-        }
+      let nextPointer = pointer + 1;
+      let nextName = _switchActions[nextPointer]?.name; // -az-
+      let nextActionName = _switchActions[nextPointer]?.action; // az() / 'switch'
+      if(nextActionName === 'switch'){
+        nextPointer++;
+        nextName = _switchActions[nextPointer]?.name; // -az-
+        nextActionName = _switchActions[nextPointer]?.action; // func az
       }
 
+      const thisCd = talentDamage[thisName]?.[thisActionName]?.[0]?.cd || 0; //当前技能cd
+      const nextCd = talentDamage[nextName]?.[nextActionName]?.[0]?.cd || 0; //下一技能cd
+
+      const cdKey = thisName+'-'+thisActionName;                             //角色名 - 行动名
+      const cdKeyNext = nextName + '-' + nextActionName;                 //下个 角色名 - 行动名
+
+      if(!cdObj[cdKey]){
+        cdObj[cdKey] = i;
+      }
+
+      // log(i,thisName, thisActionName, nextName, nextActionName, '|', i, _.cloneDeep(cdObj), nextCd)
+
+      if(cdObj[cdKeyNext] && (i - (cdObj[cdKeyNext] || 0) < nextCd)){
+        continue
+      }
 
       packActions.forEach(packAction => {
         //当前动作主序时长结束, 指针+1, 读取下一动作
@@ -968,6 +994,8 @@ export default {
           packActions = [];
           pointer++;
           packActionsFlag = true;
+          cdObj[cdKeyNext] = i;  //这里不覆盖就可以连续用多次... todo teampack.skillFree计算cd时这边可能用得上
+          // log(i, 'next action', cdKey)
         }
       });
     }

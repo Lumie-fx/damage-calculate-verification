@@ -52,28 +52,29 @@ export function shenHe(level, stars, skills=[1,1,1]){
 
       const start = startIdx; //取第一个
       const attr = {
-        cd: 120,
-        last: 15,
-        sequenceEL: 8,
-        during: 300,
+        cd: 100,
+        last: 5,
+        sequenceBuff: 1,
+        sequence: 3,   //todo 具体帧
+        during: 100,
       };
 
       const effect = [{
         from: name,
-        name: 'el',
-        sequence: attr.sequenceEL,     // 0~7 对应的last=8为末尾   todo 具体帧
-        damageMultiple: talentDamage.zhongLi.el[skills[1]-1].base,
+        name: 'e_shenhe',
+        sequence: attr.sequence,     // 0~7 对应的last=8为末尾
+        damageMultiple: talentDamage[name].e[skills[1]-1].base,
         damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         damageType: 'E',
         attach: {
-          element: [0,0,0,0,0,1,0,0],
-          type: 'A_zl',
+          element: [0,0,1,0,0,0,0,0],
+          type: 'B_sh',
           time: 95,
         }
       }];
 
       return [{
-        name: 'zhongLi_skill_E_long',
+        name: 'shenHe_skill_E_short',
         main: true, //主序的、唯一的、必须存在的
         last: attr.last,
         lasting: (lastIdx)=>{
@@ -83,6 +84,37 @@ export function shenHe(level, stars, skills=[1,1,1]){
         sequence: (lastIdx) => {
           return effect.filter(res => lastIdx - start === res.sequence)
         },
+      }, {
+        name: 'shenHe_skill_E_short_buff',
+        main: false, //主序的、唯一的、必须存在的
+        last: attr.last,
+        type: '持续',//during duringEnd
+        lasting: (idxNew)=>{
+          return idxNew - start === attr.last - 1
+        },
+        duringStart: (idxNew)=>{
+          this.super.note.push({
+            type: 'message',
+            message: `第${idxNew/10}秒，钟离生成玉璋护盾，怪物所有抗性降低20%。`,
+          });
+          that.super.resistanceMitigationRefine = {
+            name: 'zhongLi_e_long_resistance_20%',
+            value: new Array(8).fill(.2),
+            type: 'number',
+          };
+          that.super.shieldRefine = {type:'岩', name: 'zhongLi_E', time: 300};
+        },
+        during: (idxNew)=>{
+          return {flag: idxNew - start === attr.during + attr.sequenceEL}; //last结束后触发duringEnd
+        },
+        duringEnd: (idxNew)=>{
+          that.super.resistanceMitigationRefine = {
+            name: 'zhongLi_e_long_resistance_20%',
+            value: new Array(8).fill(0),
+            type: 'number',
+          };
+          return true;
+        }
       }]
     }
 

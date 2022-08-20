@@ -108,7 +108,7 @@ export const chargeElementSequence = function(idx, sequenceArr){
           if(timingEvent.type === '2'){
             //使用的与伤害类型一致 $003              同一个人 这里的from包括队里所有人===这个是当前要触发的人
             if(sequence.damageType === timingEvent.bindAction && sequence.from === timingEvent.from && !timingEvent.isCd){
-              log(idx, '特殊被动触发',timingEvent.bindAction,sequence.from)
+              // log(idx, '特殊被动触发',timingEvent.bindAction,sequence.from)
               timingEvent.reward(idx);
               timingEvent.open = true;
               timingEvent.isCd = true;
