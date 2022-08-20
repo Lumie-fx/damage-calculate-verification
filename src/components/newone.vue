@@ -16,6 +16,7 @@ import weapons from '../config/weapons'
 import relicSuit from '../config/relicSuit'
 import {chargeElementSequence} from '../config/elementCharge'
 import {damageCount} from '../config/damageCount'
+import talentDamage from '../config/talentDamage'
 
 import relics from '../config/relics' //模拟当前圣遗物属性
 import utils from "../config/utils";
@@ -421,7 +422,7 @@ export default {
 
         const lastFrontRole = this.team.filter(res=>!!res.front)?.[0];
 
-        log(`切换角色: ${name}`)
+        // log(`切换角色: ${name}`)
         this.team.map(res=>{
           res.front = res.name === name;
         });
@@ -629,7 +630,7 @@ export default {
     //todo 可选
     // xiao:e6-q-d11-e6    yeLan:q-a-e2|
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
-    const chain = 'shenLiLingHua:s-a-e3-a-e3';
+    const chain = 'zhongLi:el-q10';
 
     const rollChainArr = chain.split('|');
 
@@ -674,83 +675,85 @@ export default {
 
     let pointer = 0;
     const actionList = []; //{name: ''}
-    let packActions = null;
+    let packActions = [];
 
     let packActionsFlag = true;
 
-    const cdObj = {};
+
+    const cdObj = {
+      lastSwitchTime: -10
+    };
     let cdList = [];
+    let thisName = ''; //当前角色
 
     for(let i = 0; i < wholeTime; i++){
 
       const thisActionName = _actions[pointer]?.name; // -az-
       const thisActionArr = _actions[pointer]?.action; // func az
 
-      if(thisActionArr === 'switch'){
-        pointer++;
-        //切换人物事件
-        teamPack.teamSwitch(thisActionName);
-        continue;
-      }
-
       //元素剩余
       // log(i,teamPack.elementPoolMonster?.[0]?.amount,teamPack.elementPoolMonster?.[0]?.sequence?.attach?.element)
 
-      if(!thisActionArr){
-        break; //所有招式结束
-      }
+      if(thisActionArr!=='switch'){
 
-      if(!packActions){ //触发 返回arr了
-        packActions = thisActionArr(i);  //sequence []  --一个last内pack的多个子action值
-      }
-
-      //一个动作只执行一次 - todo 测试
-      if(packActionsFlag){
-        // log(i, thisActionArr)
-        //存cd>0的动作名称和cd
-        const actMain = packActions.filter(res => res.main)?.[0];
-        if(cdObj[actMain.name] > 0 && !cdList.includes(actMain.name)){//第二次
-          cdList.push(actMain.name);
-          log(i, '第二次', _.cloneDeep(cdList))
+        if(!thisActionArr){
+          break; //所有招式结束
         }
-        if(actMain.cd > 0 && !cdList.includes(actMain.name)){ //第一次
-          cdObj[actMain.name] = actMain.cd;
-          log(i, '第一次', _.cloneDeep(cdObj))
+
+        if(packActions.length === 0){ //触发 返回arr了
+          packActions = thisActionArr(i);  //sequence []  --一个last内pack的多个子action值
         }
-        //todo 问题出在这，第二次的时候已经执行了，没法跳出
 
-        // log(i , packActions.filter(res=>res.main)[0].cd)
+        //一个动作只执行一次 - todo 测试
+        if(packActionsFlag){
+          // log(i, thisActionArr)
+          //存cd>0的动作名称和cd
+          // const actMain = packActions.filter(res => res.main)?.[0];
+          // if(cdObj[actMain.name] > 0 && !cdList.includes(actMain.name)){//第二次
+          //   cdList.push(actMain.name);
+          //   log(i, '第二次', _.cloneDeep(cdList))
+          // }
+          // if(actMain.cd > 0 && !cdList.includes(actMain.name)){ //第一次
+          //   cdObj[actMain.name] = actMain.cd;
+          //   log(i, '第一次', _.cloneDeep(cdObj))
+          // }
+          //todo 问题出在这，第二次的时候已经执行了，没法跳出
 
-        packActions.forEach(packAction => {
-          if(packAction.type === '持续'){
-            // if(!_.find(actionList, {name: packAction.name})){
+          // log(i , packActions.filter(res=>res.main)[0].cd)
+
+          packActions.forEach(packAction => {
+            if(packAction.type === '持续'){
+              // if(!_.find(actionList, {name: packAction.name})){
               packAction.duringStart(i);//生效 $001
               actionList.push(packAction);//当前执行中
-            // }
-          }
-          //写的有问题。。 todo
-          if(packAction.type === '持续可覆盖'){
-            // if(!_.find(actionList, {name: packAction.name})){
+              // }
+            }
+            //写的有问题。。 todo
+            if(packAction.type === '持续可覆盖'){
+              // if(!_.find(actionList, {name: packAction.name})){
               packAction.duringStart(i);
               actionList.push(packAction);//当前执行中
-            // }else{
+              // }else{
               // _.find(actionList, {name: packAction.name})?.duringStart(i);
-            // }
-          }
-          if(packAction.type === '延迟伤害'){//具体分析  -- 延迟伤害就这2个, 是否统一循环处理
-            // if(packAction.name === 'huTao_skill_E_xueMeiXiang'){
+              // }
+            }
+            if(packAction.type === '延迟伤害'){//具体分析  -- 延迟伤害就这2个, 是否统一循环处理
+              // if(packAction.name === 'huTao_skill_E_xueMeiXiang'){
               if(!_.find(actionList, {name: packAction.name})){ //只存在单个需要这个判断
                 packAction.duringStart(i);//生效  =>  传入i在内部计算
                 actionList.push(packAction);//当前执行中
               }
-            // }
-            //1.胡桃雪梅香 huTao_skill_E_xueMeiXiang
-            //2.钟离共鸣 zhongLi_skill_E_gongMing
-            //3.绫华霜灭 shenLiLingHua_skill_Q_shuangMie
-          }
-        });
+              // }
+              //1.胡桃雪梅香 huTao_skill_E_xueMeiXiang
+              //2.钟离共鸣 zhongLi_skill_E_gongMing
+              //3.绫华霜灭 shenLiLingHua_skill_Q_shuangMie
+            }
+          });
+        }
+        packActionsFlag = false;
+
       }
-      packActionsFlag = false;
+
 
       //持续型buff增益结束时的清除缓存
       const clearList = [];
@@ -777,6 +780,10 @@ export default {
         actionList.splice(indexItm,1);
       });
 
+
+      // if(thisActionName === 'shenLiLingHua'){
+      //   debugger
+      // }
 
       packActions.forEach(packAction => {
         let sequenceFlag = true;
@@ -906,37 +913,59 @@ export default {
       // 1.技能时长存了以后, 第一次仍然要到cd结束才走的到下个pointer
       // 2.cd>last时, packAction?.lasting不触发了, 是否packAction?.lasting改为>=  - 绫华eq改了, 貌似ok
 
-      //cd过去1, 读秒
-      // actionCdGoTime1();
+      // const cdDelList = [];
+      // for(let cdName in cdObj){
+      //   cdObj[cdName]--
+      //   if(cdObj[cdName] === 0){
+      //     cdDelList.push(cdName);
+      //   }
+      // }
+      // cdList = cdList.filter(_name => !cdDelList.includes(_name));
       //
       // const action2Name = packActions.filter(res => res.main)?.[0].name;
-      // log(i, nextActionName)
-      // if(nextActionName.includes(action2Name)){
-      //   // if(action2Name === 1) debugger
-      //   // log(i, nextActionName)
+      //
+      // log(i,_.cloneDeep(cdList), action2Name)
+      //
+      // if(cdList.includes(action2Name)){
       //   continue;
       // }
-      const cdDelList = [];
-      for(let cdName in cdObj){
-        cdObj[cdName]--
-        if(cdObj[cdName] === 0){
-          cdDelList.push(cdName);
+
+      if(thisActionArr === 'switch'){
+        if(i - cdObj.lastSwitchTime >= 10){
+          cdObj.lastSwitchTime = i;
+        }else{
+          teamPack.note.push({type: 'message', message: `第${i/10}秒，切人cd中。`})
+          continue;
         }
-      }
-      cdList = cdList.filter(_name => !cdDelList.includes(_name));
-
-      const action2Name = packActions.filter(res => res.main)?.[0].name;
-
-      log(i,_.cloneDeep(cdList), action2Name)
-
-      if(cdList.includes(action2Name)){
+        pointer++;
+        //切换人物事件
+        teamPack.teamSwitch(thisActionName);
+        teamPack.note.push({type: 'message', message: `第${i/10}秒，人物切换为${thisActionName}。`});
+        thisName = thisActionName;
         continue;
       }
+
+      const thisCd = talentDamage[thisName]?.[thisActionName]?.[0]?.cd;
+      if(thisCd){
+        const cdKey = thisName+'-'+thisActionName;
+        if(!cdObj[cdKey]){
+          cdObj[cdKey] = -1000;
+        }
+        log(i,thisName, thisActionName, 'func', cdObj[cdKey], thisCd)
+
+        if(i - cdObj[cdKey] >= thisCd){
+          cdObj[cdKey] = i;
+        }else{
+          // teamPack.note.push({type: 'message', message: `第${i/10}秒，${thisName}的${thisActionName}正在冷却中。`})
+          continue;
+        }
+      }
+
 
       packActions.forEach(packAction => {
         //当前动作主序时长结束, 指针+1, 读取下一动作
         if(packAction?.main && packAction?.lasting(i)){
-          packActions = null;
+          packActions = [];
           pointer++;
           packActionsFlag = true;
         }

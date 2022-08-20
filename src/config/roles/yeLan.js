@@ -69,7 +69,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {
@@ -115,7 +115,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx)=>{
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {
@@ -184,7 +184,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
         last: attr.last,
         type: '单次',
         lasting: (lastIdx)=>{
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         sequence: (lastIdx) => {
           return effect.filter(res => lastIdx - start === res.sequence)

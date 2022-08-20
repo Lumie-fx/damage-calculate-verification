@@ -77,7 +77,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
         main: true, //主序的、唯一的、必须存在的
         last: attr.last,
         lasting: (lastIdx)=>{
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {
@@ -115,7 +115,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
         main: true, //主序的、唯一的、必须存在的
         last: attr.last,
         lasting: (lastIdx)=>{
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {
@@ -157,7 +157,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
         main: true, //主序的、唯一的、必须存在的
         last: attr.last,
         lasting: (lastIdx)=>{
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {

@@ -129,7 +129,7 @@ export function zhongLi(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx)=>{
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {
@@ -203,7 +203,7 @@ export function zhongLi(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx)=>{
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {

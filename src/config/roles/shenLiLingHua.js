@@ -200,7 +200,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
 
     const that = this;
 
-    //冲刺 todo 独立附着冰元素
+    //冲刺 todo 计算时改0伤害描述
     this.s = (startIdx) => {
 
       const start = startIdx; //取第一个
@@ -233,7 +233,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
         last: attr.last,
         type: '持续可覆盖',//during duringEnd
         lasting: (idxNew)=>{
-          return idxNew - start === attr.last - 1
+          return idxNew - start >= attr.last - 1
         },
         duringStart(idxNew){
           let message = `第${idxNew/10}秒，神里绫华使用霰步，短时间内获得冰元素附魔。`
@@ -317,7 +317,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {
@@ -396,7 +396,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '多次',
         sequence: (lastIdx) => {
@@ -435,7 +435,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
-          return lastIdx - start >= attr.last;
+          return lastIdx - start >= attr.last - 1;
         },
         type: '单次',
         sequence: (lastIdx) => {
@@ -535,7 +535,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
               message: `第${lastIdx/10}秒，神里绫华施放神里流·霜灭，造成冰刃切割伤害。`,
             });
           }
-          return lastIdx - start >= attr.last
+          return lastIdx - start >= attr.last - 1;
         },
         type: '单次',
         sequence: (lastIdx) => {

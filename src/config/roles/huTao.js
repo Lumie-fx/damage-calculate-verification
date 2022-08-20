@@ -144,7 +144,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {
@@ -197,7 +197,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '多次',
         sequence: (lastIdx) => {
@@ -261,7 +261,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '多次',
         sequence: (lastIdx) => {
@@ -337,7 +337,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx) => {
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '多次',
         sequence: (lastIdx) => {
@@ -368,7 +368,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         last: attr.last,
         type: '持续',//during duringEnd
         lasting: (idxNew)=>{
-          return idxNew - start === attr.last - 1
+          return idxNew - start >= attr.last - 1
         },
         duringStart: (idxNew)=>{
           let attackAdd = this.refineAttr.life * talentDamage.huTao.e[skills[1]-1].base;
@@ -453,7 +453,7 @@ export function huTao(level, stars, skills=[1,1,1]){
         cd: attr.cd,
         last: attr.last,
         lasting: (lastIdx)=>{
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         type: '单次',
         sequence: (lastIdx) => {

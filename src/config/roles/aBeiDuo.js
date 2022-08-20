@@ -98,7 +98,7 @@ export function aBeiDuo(level, stars, skills=[1,1,1]){
         last: attr.last,
         type: '单次',
         lasting: (lastIdx)=>{
-          return lastIdx - start === attr.last - 1
+          return lastIdx - start >= attr.last - 1
         },
         sequence: (lastIdx) => {
           return effect.filter(res => lastIdx - start === res.sequence)
