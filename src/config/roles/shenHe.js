@@ -95,24 +95,19 @@ export function shenHe(level, stars, skills=[1,1,1]){
         duringStart: (idxNew)=>{
           this.super.note.push({
             type: 'message',
-            message: `第${idxNew/10}秒，钟离生成玉璋护盾，怪物所有抗性降低20%。`,
+            message: `第${idxNew/10}秒，申鹤点按仰灵威召将役咒，所有冰元素伤害获得加成。`,
           });
-          that.super.resistanceMitigationRefine = {
-            name: 'zhongLi_e_long_resistance_20%',
-            value: new Array(8).fill(.2),
-            type: 'number',
-          };
-          that.super.shieldRefine = {type:'岩', name: 'zhongLi_E', time: 300};
+
+          //todo 起
+
         },
         during: (idxNew)=>{
-          return {flag: idxNew - start === attr.during + attr.sequenceEL}; //last结束后触发duringEnd
+          return {flag: idxNew - start === attr.during + attr.sequence}; //last结束后触发duringEnd
         },
         duringEnd: (idxNew)=>{
-          that.super.resistanceMitigationRefine = {
-            name: 'zhongLi_e_long_resistance_20%',
-            value: new Array(8).fill(0),
-            type: 'number',
-          };
+
+          //todo 结
+
           return true;
         }
       }]

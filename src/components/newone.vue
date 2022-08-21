@@ -912,7 +912,7 @@ export default {
 
 
 
-      
+
 
 
 
@@ -1001,13 +1001,11 @@ export default {
         nextFreeSkill?.cdCount
       );
 
-      // let continueFlag =
-
       //技能cd模型1, 通过储存计数判断可以使用几次
       if(nextFreeSkill && nextFreeSkill.num === 0){
         continue;
       }
-      //技能cd模型1, 只能使用1次的技能: 上次使用节点距离现在的时间<技能cd   &&  不为模型1初次 && 不为模型1后续
+      //技能cd模型2, 只能使用1次的技能: 上次使用节点距离现在的时间<技能cd   &&  不为模型1初次 && 不为模型1后续
       if(cdObj[cdKeyNext] && (i - (cdObj[cdKeyNext] || 0) < nextCd) && !freeFlag && !nextFreeSkill?.num){
         continue
       }
