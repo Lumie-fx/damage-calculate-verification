@@ -30,6 +30,22 @@ export function xiao(level, stars, skills=[1,1,1]){
 
     const that = this;
 
+    const skillFreeObj = {
+      name: 'xiao-e',
+      cd: 100,
+      cdCount: 0,
+    };
+
+    if(stars === 0){
+      skillFreeObj.num = 2;
+      skillFreeObj.numMax = 2;
+    }else{
+      skillFreeObj.num = 3;
+      skillFreeObj.numMax = 3;
+    }
+
+    this.super.skillFree.push(skillFreeObj);
+
     //天赋1 q后5% 3s+5% max25% q结束清除效果
     if(level >= 20){
       isTalent1 = true;
@@ -146,7 +162,7 @@ export function xiao(level, stars, skills=[1,1,1]){
       const start = startIdx; //取第一个
       const attr = {
         cd: 100,
-        last: 4,
+        last: 3,
         sequence: 1, //todo
       };
 

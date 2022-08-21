@@ -33,7 +33,7 @@ const insert = [{
     stars: 3,
   },
   level: 90,
-  stars: 0,
+  stars: 1,
   skill: [10,8,8],
   wear: [{name: 'jueDouShi', num: 3}, {name:'cuiLv', num: 2}],
   relics: {
@@ -635,8 +635,9 @@ export default {
     // xiao:e6-q-d11-e6    yeLan:q-a-e2|
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|shenLiLingHua:s-a-e-q-az3-end';
+    const chain = 'aBeiDuo:e|zhongLi:q|yeLan:e-q-a-e|xiao:e3-q-d11';
     // const chain = 'shenLiLingHua:e-q-end';
-    const chain = 'xiao:e5-q-d11-e5';
+    // const chain = 'xiao:e-q-e-d';
 
     const rollChainArr = chain.split('|');
 
@@ -685,7 +686,7 @@ export default {
     //   return person[nowValue]().filter(res=>res.main)[0].last + allValue
     // },0);
 
-    const wholeTime = 1000;
+    const wholeTime = 1500;
 
     log(`wholeTime: ${wholeTime}`);
     log(_actions)
@@ -724,18 +725,6 @@ export default {
         //一个动作只执行一次 - todo 测试
         if(packActionsFlag){
           // log(i, thisActionArr)
-          //存cd>0的动作名称和cd
-          // const actMain = packActions.filter(res => res.main)?.[0];
-          // if(cdObj[actMain.name] > 0 && !cdList.includes(actMain.name)){//第二次
-          //   cdList.push(actMain.name);
-          //   log(i, '第二次', _.cloneDeep(cdList))
-          // }
-          // if(actMain.cd > 0 && !cdList.includes(actMain.name)){ //第一次
-          //   cdObj[actMain.name] = actMain.cd;
-          //   log(i, '第一次', _.cloneDeep(cdObj))
-          // }
-          //todo 问题出在这，第二次的时候已经执行了，没法跳出
-
           // log(i , packActions.filter(res=>res.main)[0].cd)
 
           packActions.forEach(packAction => {
@@ -922,30 +911,25 @@ export default {
       });
 
 
-
-
-
-      //冷却没结束直接等待
-      //todo 2个问题
-      // 1.技能时长存了以后, 第一次仍然要到cd结束才走的到下个pointer
-      // 2.cd>last时, packAction?.lasting不触发了, 是否packAction?.lasting改为>=  - 绫华eq改了, 貌似ok
-
-      // const cdDelList = [];
-      // for(let cdName in cdObj){
-      //   cdObj[cdName]--
-      //   if(cdObj[cdName] === 0){
-      //     cdDelList.push(cdName);
-      //   }
-      // }
-      // cdList = cdList.filter(_name => !cdDelList.includes(_name));
-      //
-      // const action2Name = packActions.filter(res => res.main)?.[0].name;
-      //
-      // log(i,_.cloneDeep(cdList), action2Name)
-      //
-      // if(cdList.includes(action2Name)){
-      //   continue;
-      // }
+      /*
+        skillFreeObj =
+          {
+            name: 'xiao-e',
+            cd: 100,
+            cdCount: 0,
+            num: 2,
+            numMax: 2,
+          }
+      */
+      teamPack.skillFree.forEach(skillFreeObj => {
+        if(skillFreeObj.num < skillFreeObj.numMax){
+          skillFreeObj.cdCount ++;
+          if(skillFreeObj.cdCount === skillFreeObj.cd){
+            skillFreeObj.cdCount = 0;
+            skillFreeObj.num ++;
+          }
+        }
+      });
 
 
       if(thisActionArr === 'switch'){
@@ -963,6 +947,8 @@ export default {
         continue;
       }
 
+      //important: 冷却这块神仙难救, 看不懂了焯
+
       let nextPointer = pointer + 1;
       let nextName = _switchActions[nextPointer]?.name; // -az-
       let nextActionName = _switchActions[nextPointer]?.action; // az() / 'switch'
@@ -978,13 +964,41 @@ export default {
       const cdKey = thisName+'-'+thisActionName;                             //角色名 - 行动名
       const cdKeyNext = nextName + '-' + nextActionName;                 //下个 角色名 - 行动名
 
+
+      let freeFlag = false; //是否走可充能逻辑
+
+      const nextFreeSkill = _.find(teamPack.skillFree, {name: cdKeyNext});
       if(!cdObj[cdKey]){
-        cdObj[cdKey] = i;
+        // debugger
+        if(nextFreeSkill && nextFreeSkill.num > 0 ){
+          freeFlag = true;
+          // nextFreeSkill.num --;
+          cdObj[cdKey] = -1000;
+        }else{
+          cdObj[cdKey] = i;
+        }
       }
 
       // log(i,thisName, thisActionName, nextName, nextActionName, '|', i, _.cloneDeep(cdObj), nextCd)
+      log(
+        i,
+        thisName+'-'+thisActionName,
+        nextName+'-'+nextActionName,
+        cdObj[cdKeyNext],
+        '|',
+        nextCd,
+        nextFreeSkill?.num,
+        nextFreeSkill?.cdCount
+      );
 
-      if(cdObj[cdKeyNext] && (i - (cdObj[cdKeyNext] || 0) < nextCd)){
+      // let continueFlag =
+
+      //技能cd模型1, 通过储存计数判断可以使用几次
+      if(nextFreeSkill && nextFreeSkill.num === 0){
+        continue;
+      }
+      //技能cd模型1, 只能使用1次的技能: 上次使用节点距离现在的时间<技能cd   &&  不为模型1初次 && 不为模型1后续
+      if(cdObj[cdKeyNext] && (i - (cdObj[cdKeyNext] || 0) < nextCd) && !freeFlag && !nextFreeSkill?.num){
         continue
       }
 
@@ -994,8 +1008,17 @@ export default {
           packActions = [];
           pointer++;
           packActionsFlag = true;
-          cdObj[cdKeyNext] = i;  //这里不覆盖就可以连续用多次... todo teampack.skillFree计算cd时这边可能用得上
-          // log(i, 'next action', cdKey)
+
+          const nextFreeSkill = _.find(teamPack.skillFree, {name: cdKeyNext});
+          if(nextFreeSkill && nextFreeSkill.num > 0){
+            if(!freeFlag){
+              nextFreeSkill.num --;
+            }
+          }else{
+            cdObj[cdKeyNext] = i;  //这里不覆盖就可以连续用多次
+          }
+
+          log(i, 'next action', cdKeyNext, nextFreeSkill)
         }
       });
     }

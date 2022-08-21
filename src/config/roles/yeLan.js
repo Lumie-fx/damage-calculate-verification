@@ -30,6 +30,24 @@ export function yeLan(level, stars, skills=[1,1,1]){
   //天赋2q期间前台角色增伤 --ok
 
   const talent = function(){
+
+    const skillFreeObj = {
+      name: 'yeLan-e',
+      cd: 100,
+      cdCount: 0,
+    };
+
+    if(stars === 0){
+      skillFreeObj.num = 1;
+      skillFreeObj.numMax = 1;
+    }else{
+      skillFreeObj.num = 2;
+      skillFreeObj.numMax = 2;
+    }
+
+    this.super.skillFree.push(skillFreeObj);
+
+
     if(level >= 20){
       const lifeTalent1 = [.06,.12,.18,.3][ + this.teamElementNum - 1];
       this.lifeRefine = {name: 'yeLan_talent1_life', value: lifeTalent1, type: 'percent'};
