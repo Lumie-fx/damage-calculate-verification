@@ -8,6 +8,7 @@ export default {
    * moNv 魔女套
    * jueYuan 绝缘套
    * jueDouShi 角斗士
+   * zhuiYi 追忆
    * cuiLv 翠绿/风套
    * qianYan 千岩套
    * huaGuan 华馆套
@@ -91,6 +92,13 @@ export default {
   jueDouShi(num){
     if(num >= 2){
       this.attackRefine = {name: 'relic_jueDouShi_2', value: .18, type: 'percent'};
+    }
+    //todo 4
+  },
+  //追忆
+  zhuiYi(num){
+    if(num >= 2){
+      this.attackRefine = {name: 'relic_zhuiYi_2', value: .18, type: 'percent'};
     }
     //todo 4
   },

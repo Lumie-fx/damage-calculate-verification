@@ -1,5 +1,6 @@
 import roll2Zh from './roll2Zh'
 import _ from 'lodash'
+import utils from "../config/utils";
 
 const log = console.log;
 
@@ -7,7 +8,6 @@ const elementNameList = ['水','火','冰','雷','风','岩','草','物'];
 
 export const damageCount = function(note){
 
-  log(note)
   //[{}]
   /*
     {
@@ -19,7 +19,7 @@ export const damageCount = function(note){
         critical: 0.877,
         criticalDamage: 3.276,
         damageType: 'Q',                      //伤害类型
-        damageBase: [{base: 'life', rate: 1, from: 'yeLan'}],
+        damageBase: [{base: 'life', rate: 1, from: 'yeLan', main: true}],
         damageMultiple: 0.1023,
         defend: 624.172,
         elementCharge: (8) [1.676, 1.21, 1.21, 1.21, 1.21, 1.21, 1.21, 1.21],
@@ -56,10 +56,13 @@ export const damageCount = function(note){
     if(sequence.type === 'message'){
       noteList.push(sequence);
     }
+
+    let attr = sequence?.multiplicationArea;
+    const isDropDamage = _.find(attr?.damageBase || [],{main: true})?.rate !== 0;//目前把不出伤害的移除了
     //伤害结算
-    if(sequence.type === 'attach/damage' || sequence.type === 'reaction'){
+    if((sequence.type === 'attach/damage' || sequence.type === 'reaction') && isDropDamage){
       //lockedAttr + multiplicationArea => attr
-      let attr = sequence.multiplicationArea;
+
       //载入锁面板属性
       if(sequence.lockedAttr){
         attrLockList.forEach(attribute => {
@@ -73,12 +76,12 @@ export const damageCount = function(note){
 
       // log(sequence.timing)
 
-      const damageBase = attackArea(attr);
-      const {critical,criticalRate} = criticalArea(attr);
-      const damageIncrease = increaseArea(attr);
-      const defendMinus = defendArea(attr);
-      const resistanceMinus = resistanceArea(attr);
-      const {zengFuMuti, juBianDamage, type} = chargeArea(attr);
+      const damageBase = attackArea.bind(this)(attr);
+      const {critical,criticalRate} = criticalArea.bind(this)(attr);
+      const damageIncrease = increaseArea.bind(this)(attr);
+      const defendMinus = defendArea.bind(this)(attr);
+      const resistanceMinus = resistanceArea.bind(this)(attr);
+      const {zengFuMuti, juBianDamage, type} = chargeArea.bind(this)(attr);
 
       // log(defendMinus,resistanceMinus, zengFuMuti)
 
@@ -131,7 +134,7 @@ export const damageCount = function(note){
 
 //基础乘区 攻击x倍率+额外
 //攻击基数, 攻击比例 (胡桃2命雪梅香双重组合/申鹤冰凌加成)
-const attackArea = (attr) => {
+const attackArea = function(attr){
   let damageBase = 0;
   attr.damageBase.forEach(res => {
     //       attr.attack or attr.life
@@ -149,15 +152,15 @@ const attackArea = (attr) => {
   //   console.log('==========', JSON.parse(JSON.stringify(attr)))
   // }
 
-  const addOn = assignAddOns('attackArea', attr);
+  const addOn = assignAddOns.bind(this)('attackArea', attr);
 
   return damageBase + addOn;
 };
 
 //双暴乘区
 //特殊暴击计算 (如鱼叉对大招暴击, 小鹿6命e暴击) -- resolve assignAddOns
-const criticalArea = (attr) => {
-  const critical = attr.critical + assignAddOns('critical', attr);
+const criticalArea = function(attr){
+  const critical = attr.critical + assignAddOns.bind(this)('critical', attr);
 
   // log(critical)
 
@@ -170,18 +173,18 @@ const criticalArea = (attr) => {
 
 //增伤乘区
 //todo 特殊增伤 (苍古触发被动, 弓藏被动, 雪梅香算e, 等)
-const increaseArea = (attr) => {
+const increaseArea = function(attr){
   const elementType = attr.elementType;
   const elementIndex = elementType.indexOf(1);
   //独立系数
-  const addOn = assignAddOns('elementCharge', attr);
+  const addOn = assignAddOns.bind(this)('elementCharge', attr);
   // log(attr.elementCharge[elementIndex], addOn)
   return attr.elementCharge[elementIndex] + addOn; //增伤比
 };
 
 //怪物防御乘区 输出承伤比率 .5x
 //防御承伤率: (100+角色等级)/( (100+角色等级)+(100+敌人等级)x(1-减防比例) )  --减防多个加算
-const defendArea = (attr) => {
+const defendArea = function(attr){
   const roleLevel = attr.level;
   const monsterLevel = attr.monsterLevel;
   const monsterDefend = attr.monsterBaseDefend;
@@ -195,7 +198,7 @@ const defendArea = (attr) => {
 };
 
 //怪物抗性乘区 输出承伤比率 .9x or 1.05x
-const resistanceArea = (attr) => {
+const resistanceArea = function(attr){
   const elementType = attr.elementType;
   const monsterResistance = attr.monsterBaseResistance;
   const resistanceMinus = attr.monsterMinusResistance;
@@ -205,7 +208,7 @@ const resistanceArea = (attr) => {
 };
 
 //反应乘区 增幅出系数1.5x or 2x 、剧变出伤害
-const chargeArea = (attr) => {
+const chargeArea = function(attr){
   const roleLevel = attr.level;
   const elementMaster = attr.elementMaster;
   const elementReactionAloneArr = attr.elementReactionAloneArr; //魔女/莫娜命座的反应乘区, 与精通计算的数字相加
@@ -263,8 +266,25 @@ const chargeArea = (attr) => {
 const weaponNameList = ['剑','大剑','枪','弓','书'];
 const actionNameList = ['A','Z','D','E','Q'];// ...还有其他
 
+/*
+  that.increaseAddOnRefine = {
+    name: `role_${name}_e_short_charge`,
+    effect: {
+      effectAction: [1,1,1,1,1],
+      effectWeaponType: [1,1,1,1,1],
+      effectArea: 'attackArea',
+      effectElement: [0,0,1,0,0,0,0,0],
+      attachedBy: [0,0,0,0,0,0,0,0],
+        -- <role表示基于谁的属性, 不写默认基于自己, lock与role同时出现, true表示读取lockedAttr的数据>
+      effectValue: 1000 / {base: 'attack', rate: .8, from: 'shenHe_e', role: 'shenHe'},
+      times: 5,                   -- 次数
+      timesMinusArr: [1,1,1,1,1], -- 减次数的行动
+    },
+    timeCount: 10000
+  };
+*/
 //细碎增益
-const assignAddOns = (type, attr) => {
+const assignAddOns = function(type, attr){
   if(!attr.increaseAddOn) {
     return 0;
   }
@@ -276,20 +296,24 @@ const assignAddOns = (type, attr) => {
     // now.effect.effectWeaponType
     let flag = true;
     //武器不匹配
-    if(now.effect.effectWeaponType[weaponNameList.indexOf(attr.weaponType)] === 0){
+    if(now.effect?.effectWeaponType?.[weaponNameList.indexOf(attr.weaponType)] === 0){
       flag = false;
     }
     //动作不匹配
-    if(now.effect.effectAction[actionNameList.indexOf(attr.damageType)] === 0){
+    if(now.effect?.effectAction?.[actionNameList.indexOf(attr.damageType)] === 0){
       flag = false;
     }
     //元素不匹配
-    if(now.effect.effectElement[attr.elementType.indexOf(1)] === 0){
+    if(now.effect?.effectElement?.[attr.elementType.indexOf(1)] === 0){
+      flag = false;
+    }
+    //次数不匹配
+    if(now.effect?.times === 0){
       flag = false;
     }
 
     //附着不匹配 - 匣里灭辰/冰套 等
-    if(now.effect.attachedBy.includes(1)){
+    if(now.effect?.attachedBy?.includes(1)){
       //当前池子里所有存在的元素 [1,0,1,0,0,0,0,0]=>水冰共存
       let nowElementPool = (attr?.elementPool || []).reduce((_sum, _now) => {
         _sum[_now.sequence.attach.element.indexOf(1)] = 1;
@@ -336,11 +360,32 @@ const assignAddOns = (type, attr) => {
       //{sequence.attach.element:[]}
     }
 
+    //todo shenHe times计算
+    //times: 5,                   -- 次数
+    //timesMinusArr: [1,1,1,1,1], -- 减次数的行动
+    if(utils.queryValueType(now.effect?.times) === 'Number'){
+      if(now.effect?.timesMinusArr?.[actionNameList.indexOf(attr.damageType)] === 1){
+        const timesObj = _.find(this[attr.from].refineAttr.increaseAddOn, {name: now.name});
+        if(timesObj?.effect?.times > 0){
+          timesObj.effect.times -= 1;
+          log(timesObj.effect.times,_.cloneDeep(_.find(this.shenLiLingHua.refineAttr.increaseAddOn, {name: 'role_shenHe_e_short_addon_attack'}).effect.times))
+        }else{
+          flag = false;
+        }
+      }
+    }
+
 
     if(flag){
       if(type === 'attackArea'){
         // console.log('==========================',attr[now.effect.effectValue.base],now.effect.effectValue.rate)
-        return attr[now.effect.effectValue.base] * now.effect.effectValue.rate
+        let baseAttr = attr[now.effect.effectValue.base];
+        if(now.effect?.effectValue?.role){
+          const nowEffectValue = now.effect.effectValue;
+          baseAttr = this[nowEffectValue.role]['refineAttr'][nowEffectValue.base];
+          // log(baseAttr, attr[now.effect.effectValue.base])
+        }
+        return baseAttr * now.effect.effectValue.rate
       }else{
         // console.log('==========================',now.effect.effectValue)
         return sum + now.effect.effectValue;

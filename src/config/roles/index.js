@@ -4,6 +4,7 @@ import {yeLan} from './yeLan'
 import {huTao} from './huTao'
 //冰
 import {shenLiLingHua} from './shenLiLingHua'
+import {shenHe} from './shenHe'
 //雷
 //风
 import {xiao} from './xiao'
@@ -19,6 +20,7 @@ export {
   huTao,
 
   shenLiLingHua,
+  shenHe,
 
   xiao,
 

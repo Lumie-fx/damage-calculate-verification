@@ -1,4 +1,4 @@
-
+import {damageCount} from "./damageCount";
 import _ from 'lodash'
 
 const log = console.log;
@@ -474,6 +474,10 @@ function notAttach(item, idx){
     message: item.sequence?.message,
     multiplicationArea: packDamageItem.bind(this)(item, null),
   })
+}
+
+function damageCountCalc(noteObj){
+  damageCount(noteObj);
 }
 
 function packDamageItem(item, reaction){

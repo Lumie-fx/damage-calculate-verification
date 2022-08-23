@@ -25,54 +25,54 @@ import utils from "../config/utils";
 //数据 todo 接入miao-plugin查询插件数据 - enka
 
 const insert = [{
-  name: 'xiao',
-  element: '风',
+  name: 'shenLiLingHua',
+  element: '冰',
   weapon: {
-    name: 'hePuYuan',
+    name: 'wuQieZhiHuiGuang',
     level: 90,
-    stars: 3,
+    stars: 5,
   },
   level: 90,
-  stars: 1,
-  skill: [10,8,8],
-  wear: [{name: 'jueDouShi', num: 3}, {name:'cuiLv', num: 2}],
+  stars: 6,
+  skill: [10,13,13],
+  wear: [{name: 'bingFeng', num: 4}],
   relics: {
-    life: 4989,
-    lifePercent: .222,
-    attack: 360,
-    attackPercent: .781,
-    defend: 32,
-    defendPercent: 0,
-    critical: .264,
-    criticalDamage: 1.267,
-    energyCharge: .201,
-    elementMaster: 82,
-    elementCharge: [0,0,0,0,.466,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+    life: 5348,
+    lifePercent: 0,
+    attack: 342,
+    attackPercent: .95,
+    defend: 77,
+    defendPercent: .066,
+    critical: .443,
+    criticalDamage: 1.174,
+    energyCharge: .052,
+    elementMaster: 23,
+    elementCharge: [0,0,.466,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 },{
-  name: 'yeLan',
-  element: '水',
+  name: 'shenHe',
+  element: '冰',
   weapon: {
-    name: 'ruoShui',
+    name: 'xiZai',
     level: 90,
-    stars: 1,
+    stars: 5,
   },
   level: 90,
-  stars: 4,
-  skill: [8,9,12],
-  wear: [{name: 'jueYuan', num: 4}],
+  stars: 6,
+  skill: [1,13,12],
+  wear: [{name: 'jueDouShi', num: 2}, {name: 'zhuiYi', num: 2}],
   relics: {
-    life: 4780,
-    lifePercent: .804,
-    attack: 329,
-    attackPercent: 0,
-    defend: 0,
-    defendPercent: .139,
-    critical: .455,
-    criticalDamage: .894,
-    energyCharge: .745,
-    elementMaster: 42,
-    elementCharge: [.466,0,0,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+    life: 5796,
+    lifePercent: 0,
+    attack: 370,
+    attackPercent: 1.771,
+    defend: 32,
+    defendPercent: .131,
+    critical: .163,
+    criticalDamage: .124,
+    energyCharge: .771,
+    elementMaster: 19,
+    elementCharge: [0,0,0,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 },{
   name: 'zhongLi',
@@ -391,7 +391,7 @@ export default {
         }
         if(selectRoles){
           selectRoles.forEach(res => {
-            res[refine.name + 'Refine'] = refine.value;
+            res[refine.name + 'Refine'] = _.cloneDeep(refine.value);
           })
         }
       }
@@ -635,8 +635,8 @@ export default {
     // xiao:e6-q-d11-e6    yeLan:q-a-e2|
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|shenLiLingHua:s-a-e-q-az3-end';
-    const chain = 'aBeiDuo:e|zhongLi:q|yeLan:e-q-a-e|xiao:e3-q-d11';
-    // const chain = 'shenLiLingHua:e-q-end';
+    // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:e-q-a-e|xiao:e3-q-d11';
+    const chain = 'shenHe:e|shenLiLingHua:s-a6|shenHe:e|shenLiLingHua:s-a6';
     // const chain = 'xiao:e-q-e-d';
 
     const rollChainArr = chain.split('|');
@@ -855,6 +855,24 @@ export default {
             }
           }
         })
+
+        let delAddOneList = [];
+        role.refineAttr.increaseAddOn.forEach((addOnEvent, addOnEventIndex) => {
+          if(addOnEvent.timeCount < 10000){
+            if(role.name === 'shenLiLingHua' && addOnEvent.name === 'role_shenHe_e_short_addon_attack'){
+              log(i, role.name, addOnEvent.effect.times, _.cloneDeep(_.find(teamPack.shenLiLingHua.refineAttr.increaseAddOn, {name: 'role_shenHe_e_short_addon_attack'}).effect.times))
+
+            }
+            if(addOnEvent.timeCount === 0){
+              delAddOneList.push(addOnEventIndex);
+            }
+            addOnEvent.timeCount--;
+          }
+        })
+        delAddOneList.reverse().forEach(delIndex => {
+          role.refineAttr.increaseAddOn.splice(delIndex, 1);
+        });
+
       });
 
 
@@ -989,17 +1007,16 @@ export default {
         }
       }
 
-      // log(i,thisName, thisActionName, nextName, nextActionName, '|', i, _.cloneDeep(cdObj), nextCd)
-      log(
-        i,
-        thisName+'-'+thisActionName,
-        nextName+'-'+nextActionName,
-        cdObj[cdKeyNext],
-        '|',
-        nextCd,
-        nextFreeSkill?.num,
-        nextFreeSkill?.cdCount
-      );
+      // log(
+      //   i,
+      //   thisName+'-'+thisActionName,
+      //   nextName+'-'+nextActionName,
+      //   cdObj[cdKeyNext],
+      //   '|',
+      //   nextCd,
+      //   nextFreeSkill?.num,
+      //   nextFreeSkill?.cdCount
+      // );
 
       //技能cd模型1, 通过储存计数判断可以使用几次
       if(nextFreeSkill && nextFreeSkill.num === 0){
@@ -1031,7 +1048,7 @@ export default {
       });
     }
 
-    const notes = damageCount(teamPack.note);
+    const notes = damageCount.call(teamPack, teamPack.note);
 
     log(notes)
   }

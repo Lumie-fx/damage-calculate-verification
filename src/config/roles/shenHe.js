@@ -25,20 +25,63 @@ export function shenHe(level, stars, skills=[1,1,1]){
   //4命+每层冰凌叠1/50层5%e伤害 - todo
   //6命az不消耗冰凌 - todo
 
+  let talentFlag1 = false;
+  let talentFlag2 = false;
 
   const talent = function(){
+
+    const skillFreeObj = {
+      name: 'shenHe-e',
+      cd: 100,
+      cdCount: 0,
+    };
+
+    if(stars === 0){
+      skillFreeObj.num = 1;
+      skillFreeObj.numMax = 1;
+    }else{
+      skillFreeObj.num = 2;
+      skillFreeObj.numMax = 2;
+    }
+
+    this.super.skillFree.push(skillFreeObj);
 
     //突破百分比攻击力
     this.attackRefine = {name: 'shenHe_talent_lv_up_attack', value: .288, type: 'percent'};
 
     //天赋1 q中场上角色冰伤+15% - todo
     if(level >= 20){
-
+      talentFlag1 = true;
     }
     //天赋2 短e后eq+15%/10s, 长e后azd+15%/15s - todo
     if(level >= 70){
-
+      talentFlag2 = true;
     }
+  };
+
+  const shortEEffect = {
+    effectArea: 'attackArea',
+    effectElement: [0,0,1,0,0,0,0,0],
+    effectValue: {base: 'attack', rate: talentDamage[name].e[skills[1]-1].add, from: name+'_short_e', role: name},
+    times: 5,
+    timesMinusArr: [1,1,1,1,1], // --注释
+  };
+  const shortETalent1Effect = {
+    effectArea: 'elementCharge',
+    effectAction: [0,0,0,1,1],
+    effectValue: .15,
+  };
+  const longEEffect = {
+    effectArea: 'attackArea',
+    effectElement: [0,0,1,0,0,0,0,0],
+    effectValue: {base: 'attack', rate: talentDamage[name].e[skills[1]-1].add, from: name+'_long_e', role: name},
+    times: 7,
+    timesMinusArr: [1,1,1,1,1], // --注释
+  };
+  const longETalent1Effect = {
+    effectArea: 'elementCharge',
+    effectAction: [1,1,1,0,0],
+    effectValue: .15,
   };
 
 
@@ -97,17 +140,27 @@ export function shenHe(level, stars, skills=[1,1,1]){
             type: 'message',
             message: `第${idxNew/10}秒，申鹤点按仰灵威召将役咒，所有冰元素伤害获得加成。`,
           });
-
-          //todo 起
-
+          this.super.teamRefine('all',name+'_e_short_addon_attack', {
+            name: 'increaseAddOn',
+            value: {
+              name: `role_${name}_e_short_addon_attack`,
+              effect: shortEEffect,
+              timeCount: 100
+            }
+          });
+          this.super.teamRefine('all',name+'_e_short_charge_15%', {
+            name: 'increaseAddOn',
+            value: {
+              name: `role_${name}_e_short_charge_15%`,
+              effect: shortETalent1Effect,
+              timeCount: 100
+            }
+          });
         },
         during: (idxNew)=>{
           return {flag: idxNew - start === attr.during + attr.sequence}; //last结束后触发duringEnd
         },
         duringEnd: (idxNew)=>{
-
-          //todo 结
-
           return true;
         }
       }]
