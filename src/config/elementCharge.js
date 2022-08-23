@@ -33,7 +33,7 @@ export const chargeElementSequence = function(idx, sequenceArr){
         // const {type,rate,isReaction,amount0} = reaction2Element(elementPool, idx);
         // log('||||||||||||||'+type)
         // if(['感电'].includes(type||'')){
-        //   // this.note.push({
+        //   // damageCountCalc({
         //   //   from: item.sequence.from,
         //   //   timing: idx,
         //   //   type: 'reaction',
@@ -377,7 +377,7 @@ function attach(item, idx){
     //   log(idx,'abd doing1')
     // }
 
-    this.note.push({
+    damageCountCalc.bind(this)({
       from: item.sequence.from,
       timing: idx,
       type: 'attach/damage',
@@ -395,7 +395,7 @@ function attach(item, idx){
     if(isReaction){
       //                                                   仅元素附着不进行伤害计算
       if(['感电','扩散','超导'].includes(type||'') && item.sequence.damageType!=='T'){
-        this.note.push({
+        damageCountCalc.bind(this)({
           from: item.sequence.from,
           timing: idx,
           type: 'reaction',
@@ -406,7 +406,7 @@ function attach(item, idx){
           multiplicationArea: packDamageItem.bind(this)(item, {}),
         });
       }
-      this.note.push({
+      damageCountCalc.bind(this)({
         from: item.sequence.from,
         timing: idx,
         type: 'reaction',
@@ -417,7 +417,7 @@ function attach(item, idx){
         multiplicationArea: packDamageItem.bind(this)(item, {type, rate}),
       });
     }else{
-      this.note.push({
+      damageCountCalc.bind(this)({
         from: item.sequence.from,
         timing: idx,
         type: 'attach/damage',
@@ -465,7 +465,7 @@ function notAttach(item, idx){
   // }
 
 
-  this.note.push({
+  damageCountCalc.bind(this)({
     from: item.sequence.from,
     timing: idx,
     type: 'attach/damage',
@@ -477,7 +477,7 @@ function notAttach(item, idx){
 }
 
 function damageCountCalc(noteObj){
-  damageCount(noteObj);
+  damageCount.bind(this)(noteObj);
 }
 
 function packDamageItem(item, reaction){
@@ -620,7 +620,7 @@ function reaction2Element(pool, idx){
 
   if(elementName1 === '水' && elementName2 === '冰' || elementName1 === '冰' && elementName2 === '水'){
     type = '冻结';
-    // this.note.push({
+    // damageCountCalc({
     //   type: 'message',
     //   message: `第${idx/10}秒，触发冻结反应，怪物被冻结。`,
     // })

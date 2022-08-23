@@ -245,7 +245,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
               type: 'number',
             };
           }
-          that.super.note.push({
+          that.super.noteList.push({
             type: 'message',
             message,
           });
@@ -256,7 +256,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
             element: [0,0,1,0,0,0,0,0],
             time: 50,
             end: (i_now)=>{
-              that.super.note.push({
+              that.super.noteList.push({
                 type: 'message',
                 message: `第${i_now/10}秒，神里绫华冰元素附魔结束。`,
               });
@@ -453,7 +453,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
             return idxNew - start === attr.last - 1
           },
           duringStart: (idxNew)=>{
-            this.super.note.push({
+            this.super.noteList.push({
               type: 'message',
               message: `第${idxNew/10}秒，神里绫华使用神里流·冰华，受天赋1的影响，攻击伤害得到提升。`,
             });
@@ -475,7 +475,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
             return {flag: idxNew - start === attr.during + attr.last}; //last结束后触发duringEnd
           },
           duringEnd: (idxNew)=>{
-            this.super.note.push({
+            this.super.noteList.push({
               type: 'message',
               message: `第${idxNew/10}秒，神里绫华通过神里流·冰华提升的攻击加成恢复。`,
             });
@@ -534,7 +534,7 @@ export function shenLiLingHua(level, stars, skills=[1,1,1]){
         type: '单次',
         sequence: (lastIdx) => {
           if(lastIdx - start === attr.last - 1){
-            this.super.note.push({
+            this.super.noteList.push({
               type: 'message',
               message: `第${lastIdx/10}秒，神里绫华施放神里流·霜灭，造成冰刃切割伤害。`,
             });

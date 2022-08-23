@@ -5,8 +5,9 @@ import utils from "../config/utils";
 const log = console.log;
 
 const elementNameList = ['水','火','冰','雷','风','岩','草','物'];
+const attrLockList = ['life','attack','defend','critical','criticalDamage','energyCharge','elementMaster','elementReactionAloneArr','elementCharge','defendMitigation'];
 
-export const damageCount = function(note){
+export const damageCount = function(sequence){
 
   //[{}]
   /*
@@ -48,13 +49,11 @@ export const damageCount = function(note){
     }
   */
 
-  const noteList = [];
-  const attrLockList = ['life','attack','defend','critical','criticalDamage','energyCharge','elementMaster','elementReactionAloneArr','elementCharge','defendMitigation']
 
-  note.forEach(sequence => {
+
     //技能消息/消息
     if(sequence.type === 'message'){
-      noteList.push(sequence);
+      this.noteList.push(sequence);
     }
 
     let attr = sequence?.multiplicationArea;
@@ -89,7 +88,7 @@ export const damageCount = function(note){
       //todo 冻结
 
       if(['燃烧','超导','扩散','感电','超载'].includes(type)){
-        noteList.push({
+        this.noteList.push({
           type: 'message',
           message: `第${sequence.timing/10}秒，${roll2Zh[sequence.from].name}触发${type}，造成${juBianDamage}点伤害。`,
           reactionType: type,
@@ -115,7 +114,7 @@ export const damageCount = function(note){
         }
 
         const damage = Math.round(damageBase * criticalRate * damageIncrease * defendMinus * resistanceMinus * zengFuMuti);
-        noteList.push({
+        this.noteList.push({
           type: 'message',
           message: `第${sequence.timing/10}秒，${roll2Zh[sequence.from].name}使用${sequence.actionName}，造成${damage}${reactionName}${isCritical}点${damageTypeName}伤害。`,
           reactionType: type,
@@ -127,9 +126,7 @@ export const damageCount = function(note){
       }
     }
 
-  });
 
-  return noteList;
 };
 
 //基础乘区 攻击x倍率+额外

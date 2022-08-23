@@ -136,7 +136,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
           return idxNew - start === attr.last - 1
         },
         duringStart: (idxNew)=>{
-          this.super.note.push({
+          this.super.noteList.push({
             type: 'message',
             message: `第${idxNew/10}秒，申鹤点按仰灵威召将役咒，所有冰元素伤害获得加成。`,
           });
@@ -249,7 +249,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
                 type: 'number',
               };
               that.super.shieldRefine = {type:'岩', name: 'zhongLi_E', time: 300};
-              that.super.note.push({
+              that.super.noteList.push({
                 type: 'message',
                 message: `第${lastIdx/10}秒，钟离释放天星，由于2命效果，生成玉璋护盾，怪物所有抗性降低20%。`,
               });

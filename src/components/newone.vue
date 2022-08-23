@@ -611,7 +611,7 @@ export default {
 
       Object.defineProperties(this, {...teamDefined});
 
-      this.note = [];
+      this.noteList = [];
 
     }
 
@@ -636,7 +636,7 @@ export default {
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|shenLiLingHua:s-a-e-q-az3-end';
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:e-q-a-e|xiao:e3-q-d11';
-    const chain = 'shenHe:e|shenLiLingHua:s-a6|shenHe:e|shenLiLingHua:s-a6';
+    const chain = 'shenHe:e|shenLiLingHua:s-e-a-e-a';
     // const chain = 'xiao:e-q-e-d';
 
     const rollChainArr = chain.split('|');
@@ -964,13 +964,13 @@ export default {
         if(i - cdObj.lastSwitchTime >= 10){
           cdObj.lastSwitchTime = i;
         }else{
-          teamPack.note.push({type: 'message', message: `第${i/10}秒，切人cd中。`})
+          teamPack.noteList.push({type: 'message', message: `第${i/10}秒，切人cd中。`})
           continue;
         }
         pointer++;
         //切换人物事件
         teamPack.teamSwitch(thisActionName);
-        teamPack.note.push({type: 'message', message: `第${i/10}秒，人物切换为${thisActionName}。`});
+        teamPack.noteList.push({type: 'message', message: `第${i/10}秒，人物切换为${thisActionName}。`});
         thisName = thisActionName;
         continue;
       }
@@ -1048,9 +1048,10 @@ export default {
       });
     }
 
-    const notes = damageCount.call(teamPack, teamPack.note);
+    // const notes = damageCount.call(teamPack, teamPack.note);
 
-    log(notes)
+    // log(notes)
+    log(teamPack.noteList)
   }
 }
 

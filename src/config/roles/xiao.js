@@ -222,7 +222,7 @@ export function xiao(level, stars, skills=[1,1,1]){
           return idxNew - start >= attr.last - 1
         },
         duringStart: (idxNew)=>{
-          this.super.note.push({
+          this.super.noteList.push({
             type: 'message',
             message: `第${idxNew/10}秒，魈使用靖妖傩舞，普通攻击、重击、下落攻击伤害提升，并转化为风元素伤害。`,
           });
@@ -291,7 +291,7 @@ export function xiao(level, stars, skills=[1,1,1]){
           return {flag: idxNew - start === attr.during + attr.last - 1}; //last结束后触发duringEnd
         },
         duringEnd: (idxNew)=>{
-          this.super.note.push({
+          this.super.noteList.push({
             type: 'message',
             message: `第${idxNew/10}秒，魈靖妖傩舞状态结束，加成恢复。`,
           });

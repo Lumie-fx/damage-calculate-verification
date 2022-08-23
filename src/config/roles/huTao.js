@@ -375,7 +375,7 @@ export function huTao(level, stars, skills=[1,1,1]){
           if(attackAdd > this.attr.attack * 4){
             attackAdd = this.attr.attack * 4;
           }
-          this.super.note.push({
+          this.super.noteList.push({
             type: 'message',
             message: `第${idxNew/10}秒，胡桃进入彼岸蝶舞状态，攻击提升${Math.round(attackAdd)}。`,
           });
@@ -402,7 +402,7 @@ export function huTao(level, stars, skills=[1,1,1]){
           return {flag: idxNew - start === attr.during + attr.last}; //last结束后触发duringEnd
         },
         duringEnd: (idxNew)=>{
-          this.super.note.push({
+          this.super.noteList.push({
             type: 'message',
             message: `第${idxNew/10}秒，胡桃彼岸蝶舞状态结束，攻击恢复。`,
           });
