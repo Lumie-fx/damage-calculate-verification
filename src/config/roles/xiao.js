@@ -69,13 +69,10 @@ export function xiao(level, stars, skills=[1,1,1]){
             name: 'xiao_talent2_skillE_charge_15%',
             effect: {
               effectAction: [0,0,0,1,0],
-              effectWeaponType: [1,1,1,1,1],
               effectArea: 'elementCharge',
-              effectElement: [1,1,1,1,1,1,1,1],
-              attachedBy: [0,0,0,0,0,0,0,0],
               effectValue: .15 * this.now
             },
-            timeCount: 10000
+            timeCount: 70
           };
           this.duration = 70;//刷新持续时间
         },
@@ -84,18 +81,6 @@ export function xiao(level, stars, skills=[1,1,1]){
         duration: 70,
         durationEnd(){
           this.now = 0;
-          that.increaseAddOnRefine = {
-            name: 'xiao_talent2_skillE_charge_15%',
-            effect: {
-              effectAction: [0,0,0,1,0],
-              effectWeaponType: [1,1,1,1,1],
-              effectArea: 'elementCharge',
-              effectElement: [1,1,1,1,1,1,1,1],
-              attachedBy: [0,0,0,0,0,0,0,0],
-              effectValue: 0
-            },
-            timeCount: 10000
-          };
         }
       });
     }
@@ -232,10 +217,7 @@ export function xiao(level, stars, skills=[1,1,1]){
             name: 'xiao_skillQ_benefit',
             effect: {
               effectAction: [1,1,1,0,0],
-              effectWeaponType: [1,1,1,1,1],
               effectArea: 'elementCharge',
-              effectElement: [1,1,1,1,1,1,1,1],
-              attachedBy: [0,0,0,0,0,0,0,0],
               effectValue: talentDamage.xiao.q[skills[2]-1].base,
             },
             timeCount: 10000
@@ -246,10 +228,7 @@ export function xiao(level, stars, skills=[1,1,1]){
               name: 'xiao_skillQ_benefit',
               effect: {
                 effectAction: [1,1,1,0,0],
-                effectWeaponType: [1,1,1,1,1],
                 effectArea: 'elementCharge',
-                effectElement: [1,1,1,1,1,1,1,1],
-                attachedBy: [0,0,0,0,0,0,0,0],
                 effectValue: 0,
               },
               timeCount: 10000
@@ -299,10 +278,7 @@ export function xiao(level, stars, skills=[1,1,1]){
             name: 'xiao_skillQ_benefit',
             effect: {
               effectAction: [1,1,1,0,0],
-              effectWeaponType: [1,1,1,1,1],
               effectArea: 'elementCharge',
-              effectElement: [1,1,1,1,1,1,1,1],
-              attachedBy: [0,0,0,0,0,0,0,0],
               effectValue: 0,
             },
             timeCount: 10000

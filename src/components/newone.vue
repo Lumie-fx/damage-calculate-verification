@@ -23,6 +23,7 @@ import utils from "../config/utils";
 
 //todo large 等级规整 role中按不同等级规整属性和突破属性(每10级)
 //数据 todo 接入miao-plugin查询插件数据 - enka
+//todo increaseAddOnRefine 简化 已完成:魈
 
 const insert = [{
   name: 'shenLiLingHua',
@@ -100,29 +101,29 @@ const insert = [{
     elementCharge: [0,0,0,0,0,.466,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 },{
-  name: 'aBeiDuo',
-  element: '岩',
+  name: 'xiao',
+  element: '风',
   weapon: {
-    name: 'chenShaZhiFangChui',
+    name: 'hePuYuan',
     level: 90,
-    stars: 5,
+    stars: 3,
   },
   level: 90,
   stars: 0,
-  skill: [1,9,6],
-  wear: [{name: 'huaGuan', num: 2}],
+  skill: [10,8,8],
+  wear: [{name: 'jueDouShi', num: 3}, {name:'cuiLv', num: 2}],
   relics: {
-    life: 5228,
-    lifePercent: .105,
-    attack: 344,
-    attackPercent: .041,
-    defend: 35,
-    defendPercent: .788,
-    critical: .614,
-    criticalDamage: .909,
-    energyCharge: .091,
-    elementMaster: 91,
-    elementCharge: [0,0,0,0,0,.466,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+    life: 4989,
+    lifePercent: .222,
+    attack: 360,
+    attackPercent: .781,
+    defend: 32,
+    defendPercent: 0,
+    critical: .264,
+    criticalDamage: 1.267,
+    energyCharge: .201,
+    elementMaster: 82,
+    elementCharge: [0,0,0,0,.466,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 }];
 
@@ -636,8 +637,8 @@ export default {
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|shenLiLingHua:s-a-e-q-az3-end';
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:e-q-a-e|xiao:e3-q-d11';
-    const chain = 'shenHe:e|shenLiLingHua:s-e-a-e-a';
-    // const chain = 'xiao:e-q-e-d';
+    // const chain = 'shenHe:e|shenLiLingHua:s-e-a-e-a';
+    const chain = 'xiao:e3-d-q-d10-e3';
 
     const rollChainArr = chain.split('|');
 
