@@ -20,20 +20,24 @@ export function shenHe(level, stars, skills=[1,1,1]){
     elementCharge: [1,1,1,1,1,1,1,1],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   };
 
-  //1命2个e - todo
+  //1命2个e - ok
   //2命q+6s, 场上冰爆伤+15% - todo
   //4命+每层冰凌叠1/50层5%e伤害 - todo
   //6命az不消耗冰凌 - todo
 
   let talentFlag1 = false;
   let talentFlag2 = false;
+  let skillFreeObj = {};
 
   const talent = function(){
 
-    const skillFreeObj = {
+    skillFreeObj = {
       name: 'shenHe-e',
       cd: 100,
+      name2: 'shenHe-el',
+      cd2: 150,
       cdCount: 0,
+      skillArr: [],
     };
 
     if(stars === 0){
@@ -53,7 +57,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
     if(level >= 20){
       talentFlag1 = true;
     }
-    //天赋2 短e后eq+15%/10s, 长e后azd+15%/15s - todo
+    //天赋2 短e后eq+15%/10s, 长e后azd+15%/15s - ok
     if(level >= 70){
       talentFlag2 = true;
     }
@@ -74,7 +78,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
   const longEEffect = {
     effectArea: 'attackArea',
     effectElement: [0,0,1,0,0,0,0,0],
-    effectValue: {base: 'attack', rate: talentDamage[name].e[skills[1]-1].add, from: name+'_long_e', role: name},
+    effectValue: {base: 'attack', rate: talentDamage[name].el[skills[1]-1].add, from: name+'_long_e', role: name},
     times: 7,
     timesMinusArr: [1,1,1,1,1], // --注释
   };
@@ -104,7 +108,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
 
       const effect = [{
         from: name,
-        name: 'e_shenhe',
+        name: 'e_shenhe_short',
         sequence: attr.sequence,     // 0~7 对应的last=8为末尾
         damageMultiple: talentDamage[name].e[skills[1]-1].base,
         damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
@@ -136,10 +140,11 @@ export function shenHe(level, stars, skills=[1,1,1]){
           return idxNew - start === attr.last - 1
         },
         duringStart: (idxNew)=>{
-          this.super.noteList.push({
-            type: 'message',
-            message: `第${idxNew/10}秒，申鹤点按仰灵威召将役咒，所有冰元素伤害获得加成。`,
-          });
+          //todo
+          // this.super.noteList.push({
+          //   type: 'message',
+          //   message: `第${idxNew/10}秒，申鹤点按仰灵威召将役咒，所有冰元素伤害获得加成。`,
+          // });
           this.super.teamRefine('all',name+'_e_short_addon_attack', {
             name: 'increaseAddOn',
             value: {
@@ -156,6 +161,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
               timeCount: 100
             }
           });
+          skillFreeObj.skillArr.push('e');
         },
         during: (idxNew)=>{
           return {flag: idxNew - start === attr.during + attr.sequence}; //last结束后触发duringEnd
@@ -170,28 +176,29 @@ export function shenHe(level, stars, skills=[1,1,1]){
 
       const start = startIdx; //取第一个
       const attr = {
-        cd: 120,
-        last: 15,
-        sequenceEL: 8,
-        during: 300,
+        cd: 150,
+        last: 8,
+        sequenceBuff: 5,
+        sequence: 7,   //todo 具体帧
+        during: 150,
       };
 
       const effect = [{
         from: name,
-        name: 'el',
-        sequence: attr.sequenceEL,     // 0~7 对应的last=8为末尾   todo 具体帧
-        damageMultiple: talentDamage.zhongLi.el[skills[1]-1].base,
+        name: 'e_shenhe_long',
+        sequence: attr.sequence,     // 0~7 对应的last=8为末尾
+        damageMultiple: talentDamage[name].el[skills[1]-1].base,
         damageBase: [{base: 'attack', rate: 1, from: name, main: true}],
         damageType: 'E',
         attach: {
-          element: [0,0,0,0,0,1,0,0],
-          type: 'A_zl',
-          time: 95,
+          element: [0,0,1,0,0,0,0,0],
+          type: 'B_sh_long',
+          time: 120,
         }
       }];
 
       return [{
-        name: 'zhongLi_skill_E_long',
+        name: 'shenHe_skill_E_long',
         main: true, //主序的、唯一的、必须存在的
         last: attr.last,
         lasting: (lastIdx)=>{
@@ -201,6 +208,44 @@ export function shenHe(level, stars, skills=[1,1,1]){
         sequence: (lastIdx) => {
           return effect.filter(res => lastIdx - start === res.sequence)
         },
+      }, {
+        name: 'shenHe_skill_E_long_buff',
+        main: false, //主序的、唯一的、必须存在的
+        last: attr.last,
+        type: '持续',//during duringEnd
+        lasting: (idxNew)=>{
+          return idxNew - start === attr.last - 1
+        },
+        duringStart: (idxNew)=>{
+          //todo
+          // this.super.noteList.push({
+          //   type: 'message',
+          //   message: `第${idxNew/10}秒，申鹤长按仰灵威召将役咒，所有冰元素伤害获得加成。`,
+          // });
+          this.super.teamRefine('all',name+'_e_long_addon_attack', {
+            name: 'increaseAddOn',
+            value: {
+              name: `role_${name}_e_long_addon_attack`,
+              effect: longEEffect,
+              timeCount: 150
+            }
+          });
+          this.super.teamRefine('all',name+'_e_long_charge_15%', {
+            name: 'increaseAddOn',
+            value: {
+              name: `role_${name}_e_long_charge_15%`,
+              effect: longETalent1Effect,
+              timeCount: 150
+            }
+          });
+          skillFreeObj.skillArr.push('el');
+        },
+        during: (idxNew)=>{
+          return {flag: idxNew - start === attr.during + attr.sequence}; //last结束后触发duringEnd
+        },
+        duringEnd: (idxNew)=>{
+          return true;
+        }
       }]
     }
 

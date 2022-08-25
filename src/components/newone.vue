@@ -76,29 +76,29 @@ const insert = [{
     elementCharge: [0,0,0,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 },{
-  name: 'zhongLi',
-  element: '岩',
+  name: 'yeLan',
+  element: '水',
   weapon: {
-    name: 'huMoZhiZhang',
+    name: 'ruoShui',
     level: 90,
-    stars: 2,
+    stars: 1,
   },
   level: 90,
-  stars: 2,
-  skill: [9,9,10],
-  wear: [{name: 'jueDouShi', num: 2},{name: 'qianYan', num: 2}],
+  stars: 4,
+  skill: [8,9,12],
+  wear: [{name: 'jueYuan', num: 4}],
   relics: {
-    life: 5766,
-    lifePercent: 1.125,
-    attack: 311,
-    attackPercent: .163,
+    life: 4780,
+    lifePercent: .804,
+    attack: 329,
+    attackPercent: 0,
     defend: 0,
-    defendPercent: .117,
-    critical: .595,
-    criticalDamage: .645,
-    energyCharge: .065,
-    elementMaster: 19,
-    elementCharge: [0,0,0,0,0,.466,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+    defendPercent: .139,
+    critical: .455,
+    criticalDamage: .894,
+    energyCharge: .745,
+    elementMaster: 42,
+    elementCharge: [.466,0,0,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 },{
   name: 'xiao',
@@ -637,8 +637,8 @@ export default {
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|huTao:e-az9-a-q';
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:q-a-e2|shenLiLingHua:s-a-e-q-az3-end';
     // const chain = 'aBeiDuo:e|zhongLi:q|yeLan:e-q-a-e|xiao:e3-q-d11';
-    // const chain = 'shenHe:e|shenLiLingHua:s-e-a-e-a';
-    const chain = 'xiao:e3-d-q-d10-e3';
+    const chain = 'shenHe:el3-e4'; //|shenLiLingHua:s-e-a-e-a
+    // const chain = 'yeLan:e|shenLiLingHua:s';
 
     const rollChainArr = chain.split('|');
 
@@ -707,7 +707,7 @@ export default {
 
     for(let i = 0; i < wholeTime; i++){
 
-      const thisActionName = _actions[pointer]?.name; // -az-
+      let thisActionName = _actions[pointer]?.name; // -az-
       const thisActionArr = _actions[pointer]?.action; // func az
 
       //元素剩余
@@ -860,10 +860,10 @@ export default {
         let delAddOneList = [];
         role.refineAttr.increaseAddOn.forEach((addOnEvent, addOnEventIndex) => {
           if(addOnEvent.timeCount < 10000){
-            if(role.name === 'shenLiLingHua' && addOnEvent.name === 'role_shenHe_e_short_addon_attack'){
-              log(i, role.name, addOnEvent.effect.times, _.cloneDeep(_.find(teamPack.shenLiLingHua.refineAttr.increaseAddOn, {name: 'role_shenHe_e_short_addon_attack'}).effect.times))
-
-            }
+            // if(role.name === 'shenHe' && addOnEvent.name === 'role_shenHe_e_short_addon_attack'){
+            //   log(i, role.name, addOnEvent.effect.times, _.cloneDeep(_.find(teamPack.shenHe.refineAttr.increaseAddOn, {name: 'role_shenHe_e_short_addon_attack'}).effect.times))
+            //
+            // }
             if(addOnEvent.timeCount === 0){
               delAddOneList.push(addOnEventIndex);
             }
@@ -951,15 +951,28 @@ export default {
           }
       */
       teamPack.skillFree.forEach(skillFreeObj => {
+
         if(skillFreeObj.num < skillFreeObj.numMax){
           skillFreeObj.cdCount ++;
-          if(skillFreeObj.cdCount === skillFreeObj.cd){
-            skillFreeObj.cdCount = 0;
-            skillFreeObj.num ++;
+          if(skillFreeObj?.cd2 > 0){
+            //2种cd情况
+            if(skillFreeObj.skillArr.length > 0){
+              const skillName = skillFreeObj.skillArr[0];
+              const skillCd = skillName === 'e' ? skillFreeObj.cd : skillFreeObj.cd2;
+              if(skillFreeObj.cdCount === skillCd){
+                skillFreeObj.cdCount = 0;
+                skillFreeObj.num ++;
+                skillFreeObj.skillArr.splice(0, 1);
+              }
+            }
+          }else{
+            if(skillFreeObj.cdCount === skillFreeObj.cd){
+              skillFreeObj.cdCount = 0;
+              skillFreeObj.num ++;
+            }
           }
         }
       });
-
 
       if(thisActionArr === 'switch'){
         if(i - cdObj.lastSwitchTime >= 10){
@@ -970,13 +983,13 @@ export default {
         }
         pointer++;
         //切换人物事件
-        teamPack.teamSwitch(thisActionName);
+        teamPack.teamSwitch(thisActionName); //yeLan/huTao
         teamPack.noteList.push({type: 'message', message: `第${i/10}秒，人物切换为${thisActionName}。`});
         thisName = thisActionName;
         continue;
       }
 
-      //important: 冷却这块神仙难救, 看不懂了焯
+      //important: 冷却这块神仙难救, 看不懂焯
 
       let nextPointer = pointer + 1;
       let nextName = _switchActions[nextPointer]?.name; // -az-
@@ -986,6 +999,10 @@ export default {
         nextName = _switchActions[nextPointer]?.name; // -az-
         nextActionName = _switchActions[nextPointer]?.action; // func az
       }
+
+      //长按e也视为e  -- 仅用于cd的判断
+      thisActionName = thisActionName === 'el' ? 'e' : thisActionName;
+      nextActionName = nextActionName === 'el' ? 'e' : nextActionName;
 
       const thisCd = talentDamage[thisName]?.[thisActionName]?.[0]?.cd || 0; //当前技能cd
       const nextCd = talentDamage[nextName]?.[nextActionName]?.[0]?.cd || 0; //下一技能cd
@@ -1008,19 +1025,19 @@ export default {
         }
       }
 
-      // log(
-      //   i,
-      //   thisName+'-'+thisActionName,
-      //   nextName+'-'+nextActionName,
-      //   cdObj[cdKeyNext],
-      //   '|',
-      //   nextCd,
-      //   nextFreeSkill?.num,
-      //   nextFreeSkill?.cdCount
-      // );
+      log(
+        i,
+        cdKey,
+        cdKeyNext,
+        cdObj[cdKeyNext],
+        '|',
+        nextCd,
+        nextFreeSkill?.num,
+        nextFreeSkill?.cdCount
+      );
 
-      //技能cd模型1, 通过储存计数判断可以使用几次
-      if(nextFreeSkill && nextFreeSkill.num === 0){
+      //技能cd模型1, 通过储存计数判断可以使用几次 // -1后来添加, care it
+      if(nextFreeSkill && nextFreeSkill.num - 1 === 0){
         continue;
       }
       //技能cd模型2, 只能使用1次的技能: 上次使用节点距离现在的时间<技能cd   &&  不为模型1初次 && 不为模型1后续

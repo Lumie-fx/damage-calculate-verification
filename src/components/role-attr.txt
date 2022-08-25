@@ -81,3 +81,30 @@
     elementCharge: [0,0,0,0,.466,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
   },
 }
+
+{
+  name: 'yeLan',
+  element: '水',
+  weapon: {
+    name: 'ruoShui',
+    level: 90,
+    stars: 1,
+  },
+  level: 90,
+  stars: 4,
+  skill: [8,9,12],
+  wear: [{name: 'jueYuan', num: 4}],
+  relics: {
+    life: 4780,
+    lifePercent: .804,
+    attack: 329,
+    attackPercent: 0,
+    defend: 0,
+    defendPercent: .139,
+    critical: .455,
+    criticalDamage: .894,
+    energyCharge: .745,
+    elementMaster: 42,
+    elementCharge: [.466,0,0,0,0,0,0,0],//增伤, 初始一倍, 顺序:水火冰雷风岩草物
+  },
+}

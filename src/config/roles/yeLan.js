@@ -100,6 +100,7 @@ export function yeLan(level, stars, skills=[1,1,1]){
 
       //命座4额外效果 --25s持续,可视为永久, 一发拟定20%
       //先吃到生命加成再计算伤害 --还是有点问题,提前吃到了
+      //todo 每次用都+20%没上限了
       if(stars >= 4){
         this.super.teamRefine('all', 'yeLan', {
           name: 'life',

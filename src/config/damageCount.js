@@ -365,7 +365,7 @@ const assignAddOns = function(type, attr){
         const timesObj = _.find(this[attr.from].refineAttr.increaseAddOn, {name: now.name});
         if(timesObj?.effect?.times > 0){
           timesObj.effect.times -= 1;
-          log(timesObj.effect.times,_.cloneDeep(_.find(this.shenLiLingHua.refineAttr.increaseAddOn, {name: 'role_shenHe_e_short_addon_attack'}).effect.times))
+          log(timesObj.effect.times)
         }else{
           flag = false;
         }
