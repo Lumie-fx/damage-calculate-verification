@@ -21,9 +21,9 @@ export function shenHe(level, stars, skills=[1,1,1]){
   };
 
   //1命2个e - ok
-  //2命q+6s, 场上冰爆伤+15% - todo
+  //2命q+6s, 场上冰爆伤+15% - todo addOn 加个场上的flag
   //4命+每层冰凌叠1/50层5%e伤害 - todo
-  //6命az不消耗冰凌 - todo
+  //6命az不消耗冰凌 - ok - todo 测试
 
   let talentFlag1 = false;
   let talentFlag2 = false;
@@ -53,7 +53,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
     //突破百分比攻击力
     this.attackRefine = {name: 'shenHe_talent_lv_up_attack', value: .288, type: 'percent'};
 
-    //天赋1 q中场上角色冰伤+15% - todo
+    //天赋1 q中场上角色冰伤+15% - todo addOn 加个场上的flag
     if(level >= 20){
       talentFlag1 = true;
     }
@@ -68,7 +68,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
     effectElement: [0,0,1,0,0,0,0,0],
     effectValue: {base: 'attack', rate: talentDamage[name].e[skills[1]-1].add, from: name+'_short_e', role: name},
     times: 5,
-    timesMinusArr: [1,1,1,1,1], // --注释
+    timesMinusArr: stars >= 6 ? [0,0,1,1,1] : [1,1,1,1,1],
   };
   const shortETalent1Effect = {
     effectArea: 'elementCharge',
@@ -80,7 +80,7 @@ export function shenHe(level, stars, skills=[1,1,1]){
     effectElement: [0,0,1,0,0,0,0,0],
     effectValue: {base: 'attack', rate: talentDamage[name].el[skills[1]-1].add, from: name+'_long_e', role: name},
     times: 7,
-    timesMinusArr: [1,1,1,1,1], // --注释
+    timesMinusArr: stars >= 6 ? [0,0,1,1,1] : [1,1,1,1,1],
   };
   const longETalent1Effect = {
     effectArea: 'elementCharge',
